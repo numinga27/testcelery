@@ -1,0 +1,19 @@
+asgiref== 3.7.2
+Django ==3.1.10
+django-filter==21.1
+djangorestframework==3.11.2
+djangorestframework-simplejwt==5.2.0
+msgpack==1.0.5
+Pillow==10.0.0
+pip==23.2.1
+PyJWT==2.8.0
+pytz==2023.3
+redis==4.6.0
+setuptools==68.0.0
+sqlparse ==0.4.4
+tzdata==2023.3
+websockets==11.0.3
+wheel==0.41.0
+django-cors-headers==3.7.0
+requests==2.31.0
+schedule==1.1.0
