@@ -8,7 +8,6 @@ import json
 
 from django.db import transaction
 from rest_framework import viewsets
-from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
@@ -174,9 +173,9 @@ class TournamentViewSet(viewsets.ModelViewSet):
     #     # event_viewset.list_ev(request)
     #     return Response(serializer.data)
     def list(self, request):
-        task = send_request.delay()
-        result = task.get()  # получаем результат выполнения задачи
-        return Response({'status': 'Parsing started', 'data': result})
+        task = send_request()  # Add parentheses to call the function
+        serializer = self.serializer_class(task, many=True)
+        return Response(serializer.data)
 
         
 
