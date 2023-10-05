@@ -130,3 +130,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+
+CELERY_BEAT_SCHEDULE = {
+        'parse-every-30-seconds': {
+            'task': 'myapp.tasks.parse_data',
+            'schedule': 30.0,
+        },
+    }
+    
