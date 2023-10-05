@@ -18,6 +18,7 @@ from celery import shared_task
 def send_request():
     try:
         with transaction.atomic():
+            result = []
             Tournament.objects.all().select_for_update().delete()
             Events.objects.all().select_for_update().delete()
             url = "https://fs.nimbase.cc/v1/events/live-list"
@@ -71,6 +72,7 @@ def send_request():
                                 event_id=event['EVENT_ID'])
                             if event_objects.exists():
                                 event_object = event_objects.first()
+                                result.append(serializer.data)
                                 serializer.update(
                                     event_object, serializer.validated_data)
                             else:
@@ -125,6 +127,8 @@ def send_request():
         # Если возникла ошибка, откатываем транзакцию
         with transaction.atomic():
             transaction.set_rollback(True)
+
+    return result        
 
 
 @shared_task
