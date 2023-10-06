@@ -1,12 +1,28 @@
+import datetime
+
 from rest_framework import serializers
 from .models import (Events, LiveOfEvents, EventId,
                      Tournament, HockeyLiveEvents, TournamentHockey,
-                     EndedMatch, Scheduled, All, AllHockey,ScheduledHockey,EndedHockey)
+                     EndedMatch, Scheduled, All, AllHockey, ScheduledHockey, EndedHockey)
 
 
 class EventsSerializer(serializers.ModelSerializer):
     home_images = serializers.ListField(allow_null=True, required=False)
     away_images = serializers.ListField(allow_null=True, required=False)
+    start_time = serializers.IntegerField()
+    start_utime = serializers.IntegerField()
+
+    def to_representations(self, instance):
+        representation = super().to_representation(instance)
+        start_time = representation.get('start_time', None)
+        start_utime = representation.get('start_utime', None)
+        if start_time is not None:
+            dt_object_start_time = datetime.fromtimestamp(start_time)
+            representation['start_time'] = dt_object_start_time.isoformat()
+        if start_utime is not None:
+            dt_object_start_utime = datetime.fromtimestamp(start_utime)
+            representation['start_utime'] = dt_object_start_utime.isoformat()
+        return representation
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -25,7 +41,7 @@ class EventsSerializer(serializers.ModelSerializer):
         fields = ['event_id', 'start_time', 'start_utime', 'game_time', 'short_name_away',
                   'away_name', 'away_score_current', 'away_score_part_1', 'short_name_home',
                   'home_name', 'home_score_current', 'home_score_part_1', 'home_images', 'away_images',
-                  'yellow_cards_home','yellow_cards_away','red_cards_home','red_cards_away']
+                  'yellow_cards_home', 'yellow_cards_away', 'red_cards_home', 'red_cards_away']
 
 
 class LiveOfEventsSerializer(serializers.ModelSerializer):
@@ -54,7 +70,7 @@ class TournamentSerializer(serializers.ModelSerializer):
 
 class HockeyLiveEventsSerializer(serializers.ModelSerializer):
     home_images = serializers.ListField(allow_null=True, required=False)
-    away_images= serializers.ListField(allow_null=True, required=False)
+    away_images = serializers.ListField(allow_null=True, required=False)
     home_score_part_3 = serializers.CharField(allow_blank=True, required=False)
     away_score_part_3 = serializers.CharField(allow_blank=True, required=False)
     home_score_part_2 = serializers.CharField(allow_blank=True, required=False)
@@ -197,6 +213,7 @@ class ScheduledHockeySerializer(serializers.ModelSerializer):
     class Meta:
         model = ScheduledHockey
         fields = '__all__'
+
 
 class EndedHockeySerializer(serializers.ModelSerializer):
     home_images = serializers.ListField(allow_null=True, required=False)
