@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 
 from rest_framework import serializers
 from .models import (Events, LiveOfEvents, EventId,
@@ -12,8 +12,10 @@ class EventsSerializer(serializers.ModelSerializer):
     start_time = serializers.IntegerField()
     start_utime = serializers.IntegerField()
 
-    def to_representations(self, instance):
+    def to_representation(self, instance):
         representation = super().to_representation(instance)
+        
+        # Преобразование timestamp в ISO 8601
         start_time = representation.get('start_time', None)
         start_utime = representation.get('start_utime', None)
         if start_time is not None:
@@ -22,10 +24,8 @@ class EventsSerializer(serializers.ModelSerializer):
         if start_utime is not None:
             dt_object_start_utime = datetime.fromtimestamp(start_utime)
             representation['start_utime'] = dt_object_start_utime.isoformat()
-        return representation
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
+        
+        # Преобразование списков изображений в строки
         home_images_list = representation.get('home_images', [])
         if home_images_list is not None:
             home_images_string = ''.join(home_images_list)
@@ -34,6 +34,7 @@ class EventsSerializer(serializers.ModelSerializer):
         if away_images_list is not None:
             away_images_string = ''.join(away_images_list)
             representation['away_images'] = away_images_string
+            
         return representation
 
     class Meta:
