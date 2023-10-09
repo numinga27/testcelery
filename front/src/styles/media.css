@@ -1,0 +1,122 @@
+@media screen and (max-width: 685px) {
+  .tournament {
+    border-radius: 0px;
+    margin: 0px;
+  }
+
+  .tournament__icon {
+    height: 20px;
+  }
+
+  .switch__btn {
+    transform: rotate(-90deg);
+  }
+
+  .event__game {
+    padding: 0px;
+  }
+
+  .event__game:not(:last-child) {
+    border-bottom: 1px solid var(--gray-light);
+  }
+
+  .time__score {
+    display: none;
+  }
+
+  .event__game .star {
+    display: block;
+    margin: 0px 10px;
+    order: 0;
+  }
+
+  .team__block {
+    order: 1;
+  }
+
+  .team.scoring::before {
+    font-size: 10px;
+  }
+
+  .hockey__stage {
+    width: 50px;
+    text-align: center;
+  }
+
+  .hockey__stage .event__time {
+    text-align: center;
+  }
+
+  .stage {
+    font-size: 10px;
+  }
+
+  .stage .full {
+    display: none;
+  }
+
+  .stage .short {
+    display: block;
+  }
+
+  .event__time {
+    font-size: 10px;
+    order: 2;
+    height: 100%;
+    text-align: right;
+    margin-right: 10px;
+  }
+
+  .hockey__stage {
+    order: 2;
+  }
+
+  .current__score {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-black);
+    background: none;
+    width: 70px;
+    order: 3;
+    position: relative;
+  }
+
+  .current__score::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 1px;
+    height: 100%;
+    background-color: var(--gray-light);
+  }
+
+  .current__score span {
+    display: block;
+    text-align: center;
+    margin-right: 16.5px;
+  }
+
+  .current__score span:nth-child(2) {
+    display: none;
+  }
+
+  .team__img {
+    width: 15px;
+    margin: 0px;
+  }
+
+  .team__name {
+    margin-left: 5px;
+    font-size: 10px;
+  }
+
+  .custom__checkbox,
+  label {
+    display: none;
+  }
+
+  .tournament__header {
+    padding: 3.5px 10px;
+  }
+}

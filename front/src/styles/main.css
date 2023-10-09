@@ -1,0 +1,201 @@
+:root {
+  --gray-light: rgba(234, 234, 234, 1);
+  --gray-dark: rgba(189, 189, 189, 1);
+  --table-1: rgba(248, 248, 248, 1);
+  --text-black: rgba(0, 0, 0, 1);
+  --hover-green-table: rgba(233, 255, 233, 1);
+  --score: #007c29;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: "Inter", sans-serif;
+  margin: 0;
+}
+
+a {
+  text-decoration: none;
+}
+
+#content[data-type="football"] {
+  max-width: 688px;
+  min-width: 375px;
+  margin: 10px 0px;
+}
+
+#content[data-type="hockey"] {
+  max-width: 720px;
+  min-width: 375px;
+  margin: 10px 0px;
+}
+
+.tournament {
+  border-radius: 5px;
+  border: 1px solid var(--gray-light);
+  margin: 10px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.tournament__header,
+.event__game {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+.event__game .star {
+  display: none;
+}
+
+label:hover,
+.star:hover,
+.switch__btn:hover {
+  cursor: pointer;
+}
+
+.tournament__header {
+  padding: 7px 20px;
+  border-bottom: 1px solid var(--gray-light);
+  background: var(--table-1);
+  font-size: 14px;
+  color: var(--text-black);
+}
+
+.star {
+  width: 22px;
+}
+
+.tournament__icon {
+  height: 25px;
+  margin: 0px 10px;
+}
+
+.tournament__name {
+  width: 100%;
+}
+
+.switch__btn {
+  transform: rotateX(180deg);
+  transition: all 0.3s ease;
+}
+
+.switch__btn.hide {
+  transform: rotateX(0deg);
+}
+
+.events__list.hide {
+  height: 0px;
+}
+
+.event__game {
+  padding: 17px 20px;
+}
+
+.event__game.highlighted {
+  background-color: var(--hover-green-table);
+}
+
+.custom__checkbox {
+  display: none;
+}
+
+label::before {
+  content: "";
+  display: block;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--gray-dark);
+  border-radius: 3px;
+  margin-right: 10px;
+}
+.custom__checkbox:checked + label:before {
+  content: "";
+  display: block;
+  width: 20px;
+  height: 20px;
+  background-image: url("../icons/check.svg");
+}
+
+.hockey__stage {
+  width: 100%;
+  max-width: 80px;
+  text-align: center;
+}
+
+.stage {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--score);
+}
+
+.stage .short {
+  display: none;
+}
+
+.event__time {
+  font-size: 14px;
+  width: 100%;
+  max-width: 80px;
+}
+
+.teams__block {
+  width: 100%;
+}
+
+.team {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  position: relative;
+}
+
+.team.scoring::before {
+  content: "GOAL";
+  position: absolute;
+  right: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--score);
+}
+
+.team__img {
+  width: 30px;
+  margin: 0px 10px;
+}
+
+.team__name {
+  font-size: 14px;
+  width: 100%;
+  max-width: 200px;
+}
+
+.current__score {
+  font-size: 18px;
+  width: 40px;
+  font-weight: 700;
+  color: var(--score);
+}
+
+.current__score p {
+  text-align: center;
+  padding: 4px 0;
+  width: 100%;
+}
+
+.time__score {
+  color: var(--gray-dark);
+  font-size: 16px;
+  font-weight: 400;
+  width: 40px;
+  padding: 0px 2px;
+  text-align: center;
+}
+
+.time__score.first {
+  border-right: 2px solid var(--gray-light);
+}
+
+#content[data-type="hockey"] .time__score.second {
+  border-right: 2px solid var(--gray-light);
+}

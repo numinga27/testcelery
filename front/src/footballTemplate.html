@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="shortcut icon"
+      href="./images/main_icon.png"
+      type="images/x-icon"
+    />
+    <title>STATBET</title>
+  </head>
+  <body>
+    <main>
+      <header class="header">
+        <div class="m-header-inner">
+          <button
+            class="btn-icon m-header-toggler m-side-toggler"
+            type="button"
+          >
+            <img class="icon icon-bars" src="./images/icon-bars-white.svg" />
+          </button>
+          <a class="m-header-title" href="#">
+            <img class="m-header-logo" src="./images/logo.svg" />
+          </a>
+          <div class="m-header-calendar">
+            <img
+              class="m-header-calendar__icon icon"
+              src="./images/icon-calendar-white.svg"
+            />
+          </div>
+        </div>
+
+        <div class="header-inner">
+          <div class="header__left">
+            <a class="header-logo icon-hover" href="#">
+              <img
+                class="header-logo__images icon-hover__hide"
+                src="./images/logo-gray.svg"
+              />
+              <img
+                class="header-logo__images icon-hover__show"
+                src="./images/logo.svg"
+              />
+            </a>
+            <nav class="header-menu">
+              <a
+                class="header-menu__item header-menu__item_bg header-menu__item-football active__link"
+                href="football.html"
+                >Футбол</a
+              >
+              <a
+                class="header-menu__item header-menu__item_bg header-menu__item-hockey"
+                href="hockey.html"
+                >Хоккей</a
+              >
+            </nav>
+          </div>
+
+          <div class="header__right">
+            <div class="header-social">
+              <a
+                class="header-social__item icon-hover icon-hover-telegram"
+                href="#"
+              >
+                <img
+                  class="icon icon-hover__hide"
+                  src="./images/icon-telegram-gray.svg"
+                  width="25"
+                  height="25"
+                />
+                <img
+                  class="icon icon-hover__show"
+                  src="./images/icon-telegram.svg"
+                  width="25"
+                  height="25"
+                />
+              </a>
+              <a
+                class="header-social__item icon-hover icon-hover-instagram"
+                href="https://www.instagram.com/officialstatbet/"
+                target="_blank"
+              >
+                <img
+                  class="icon icon-hover__hide"
+                  src="./images/icon-instagram-gray.svg"
+                  width="25"
+                  height="25"
+                />
+                <img
+                  class="icon icon-hover__show"
+                  src="./images/icon-instagram.svg"
+                  width="25"
+                  height="25"
+                  target="_blank"
+                />
+              </a>
+              <a
+                class="header-social__item icon-hover icon-hover-vk"
+                href="https://vk.com/officialstatbet"
+                target="_blank"
+              >
+                <img
+                  class="icon icon-hover__hide"
+                  src="./images/icon-vk-gray.svg"
+                  width="25"
+                  height="25"
+                />
+                <img
+                  class="icon icon-hover__show"
+                  src="./images/icon-vk.svg"
+                  width="25"
+                  height="25"
+                />
+              </a>
+              <a
+                class="header-social__item icon-hover icon-hover-dzen"
+                href="#"
+                target="_blank"
+              >
+                <img
+                  class="icon icon-hover__hide"
+                  src="./images/icon-dzen-gray.svg"
+                  width="25"
+                  height="25"
+                />
+                <img
+                  class="icon icon-hover__show"
+                  src="./images/icon-dzen-gray.svg"
+                  width="25"
+                  height="25"
+                />
+              </a>
+            </div>
+          </div>
+        </div>
+      </header>
+      <div class="navigation">
+        <div class="sidebar sidebar-sticky">
+          <div class="sb-widget">
+            <div class="sb-nav">
+              <a
+                class="sb-nav__item btn js-tab active"
+                href="javascript:"
+                data-target="#tournaments-top"
+                style="width: 100%; border-radius: 5px"
+                >ТОП Турниры</a
+              >
+            </div>
+          </div>
+        </div>
+        <div class="middle">
+          <div class="middle-row">
+            <div class="middle-left">
+              <div class="new-tab-btns home-soccer">
+                <div class="filter-wrapp">
+                  <a
+                    class="nav__tab btn js-tab-new active"
+                    data-tab="live"
+                    data-class="content-home"
+                    >Live</a
+                  >
+                  <a
+                    class="nav__tab btn js-tab-new"
+                    data-tab="all"
+                    data-class="content-home"
+                    >Все</a
+                  >
+                  <a
+                    class="nav__tab btn js-tab-new"
+                    data-tab="end"
+                    data-class="content-home"
+                    >Завершенные</a
+                  >
+                  <a
+                    class="nav__tab btn js-tab-new"
+                    data-tab="sheduled"
+                    data-class="content-home"
+                    >Расписание</a
+                  >
+                </div>
+              </div>
+              <div id="content" data-type="football"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
