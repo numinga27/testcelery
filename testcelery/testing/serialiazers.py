@@ -11,6 +11,8 @@ class EventsSerializer(serializers.ModelSerializer):
     away_images = serializers.ListField(allow_null=True, required=False)
     start_time = serializers.IntegerField()
     start_utime = serializers.IntegerField()
+    home_score_part_2 = serializers.CharField(allow_blank=True, required=False)
+    away_score_part_2 = serializers.CharField(allow_blank=True, required=False)
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -39,11 +41,7 @@ class EventsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Events
-        fields = ['event_id', 'start_time', 'start_utime', 'game_time', 'short_name_away',
-                  'away_name', 'away_score_current', 'away_score_part_1', 'short_name_home',
-                  'home_name', 'home_score_current', 'home_score_part_1', 'home_images', 'away_images',
-                  'yellow_cards_home', 'yellow_cards_away', 'red_cards_home', 'red_cards_away','stge_type','merge_stage_tupe',
-                   'stage','sort','live_mark']
+        fields = '__all__'
 
 
 class LiveOfEventsSerializer(serializers.ModelSerializer):
