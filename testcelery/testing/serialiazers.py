@@ -42,7 +42,8 @@ class EventsSerializer(serializers.ModelSerializer):
         fields = ['event_id', 'start_time', 'start_utime', 'game_time', 'short_name_away',
                   'away_name', 'away_score_current', 'away_score_part_1', 'short_name_home',
                   'home_name', 'home_score_current', 'home_score_part_1', 'home_images', 'away_images',
-                  'yellow_cards_home', 'yellow_cards_away', 'red_cards_home', 'red_cards_away']
+                  'yellow_cards_home', 'yellow_cards_away', 'red_cards_home', 'red_cards_away','stge_type','merge_stage_tupe',
+                   'stage','sort','live_mark']
 
 
 class LiveOfEventsSerializer(serializers.ModelSerializer):

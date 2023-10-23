@@ -66,6 +66,11 @@ def send_request():
                         'home_score_part_2': event.get('HOME_SCORE_PART_2', ''),
                         'home_images': event.get('HOME_IMAGES'),
                         'away_images': event.get('AWAY_IMAGES'),
+                        'stge_type': event['STAGE_TYPE'],
+                        'merge_stage_tupe': event['MERGE_STAGE_TYPE'],
+                        'stage': event['STAGE'],
+                        'sort': event['SORT'],
+                        'live_mark': event['LIVE_MARK'],
                     }
                     serializer = EventsSerializer(data=data)
                     if serializer.is_valid():
