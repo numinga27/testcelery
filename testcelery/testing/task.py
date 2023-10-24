@@ -71,8 +71,8 @@ def send_request():
                         'stage': event['STAGE'],
                         'sort': event['SORT'],
                         'live_mark': event['LIVE_MARK'],
-                        'red_cards_home': event['HOME_RED_CARDS'],
-                        'red_cards_away':event['AWAY_RED_CARDS'],
+                        # 'red_cards_home': event['HOME_RED_CARDS'],
+                        # 'red_cards_away': event['AWAY_RED_CARDS']
                     }
                     serializer = EventsSerializer(data=data)
                     if serializer.is_valid():
@@ -227,7 +227,7 @@ def send_request_hockey():
                         print(serializer.errors)
         except KeyError:
             pass
-    return TournamentHockey.objects.all()    
+    return TournamentHockey.objects.all()
     # except Exception as e:
     #     # Если возникла ошибка, откатываем транзакцию
     #     with transaction.atomic():
