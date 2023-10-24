@@ -71,8 +71,8 @@ def send_request():
                         'stage': event['STAGE'],
                         'sort': event['SORT'],
                         'live_mark': event['LIVE_MARK'],
-                        # 'red_cards_home': event['HOME_RED_CARDS'],
-                        # 'red_cards_away': event['AWAY_RED_CARDS']
+                        'red_cards_home': event.get('HOME_RED_CARDS',0),
+                        'red_cards_away': event.get('AWAY_RED_CARDS',0)
                     }
                     serializer = EventsSerializer(data=data)
                     if serializer.is_valid():
