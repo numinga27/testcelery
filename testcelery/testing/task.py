@@ -71,6 +71,8 @@ def send_request():
                         'stage': event['STAGE'],
                         'sort': event['SORT'],
                         'live_mark': event['LIVE_MARK'],
+                        'red_cards_home': event['HOME_RED_CARDS'],
+                        'red_cards_away':event['AWAY_RED_CARDS'],
                     }
                     serializer = EventsSerializer(data=data)
                     if serializer.is_valid():
@@ -116,16 +118,16 @@ def send_request():
                         yellow_cards_home = item['VALUE_HOME']
                         yellow_cards_away = item['VALUE_AWAY']
                         break
-                for items in json_data['DATA'][0]['GROUPS'][0]['ITEMS']:
-                    if items["INCIDENT_NAME"] == "Red Cards":
-                        red_cards_home = items['VALUE_HOME']
-                        red_cards_away = items['VALUE_AWAY']
-                        break
+                # for items in json_data['DATA'][0]['GROUPS'][0]['ITEMS']:
+                #     if items["INCIDENT_NAME"] == "Red Cards":
+                #         red_cards_home = items['VALUE_HOME']
+                #         red_cards_away = items['VALUE_AWAY']
+                #         break
                 event = Events.objects.get(event_id=event_idss)
                 event.yellow_cards_home = yellow_cards_home
                 event.yellow_cards_away = yellow_cards_away
-                event.red_cards_home = red_cards_home
-                event.red_cards_away = red_cards_away
+                # event.red_cards_home = red_cards_home
+                # event.red_cards_away = red_cards_away
                 event.save()
             except Exception:
                 pass
