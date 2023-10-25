@@ -53,10 +53,8 @@ def send_request():
                 for event in item['EVENTS']:
                     stage_start_time = datetime.datetime.fromtimestamp(event['STAGE_START_TIME'])
                     current_time = datetime.datetime.now() - stage_start_time
-                    # half = event['stage']
-                    # if half == "SECOND_HALF":
-                    #     halftime = timedelta(minutes=45)
-                    #     current_time += halftime
+                    # if event['stage'] == "SECOND_HALF":
+                    #     current_time += timedelta(minutes=45)
                     data = {
                         'event_id': event['EVENT_ID'],
                         'start_time': event['START_TIME'],
@@ -84,6 +82,9 @@ def send_request():
                         'stage_start_time': event['STAGE_START_TIME'],
                         'current_time': str(current_time)
                     }
+                    if event['STAGE_START_TIME'] == "SECOND_HALF":
+                        current_time += timedelta(minutes=45)
+                        data['current_time'] == str(current_time)
                     serializer = EventsSerializer(data=data)
                     if serializer.is_valid():
                         event_objects = Events.objects.filter(
