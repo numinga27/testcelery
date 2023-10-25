@@ -2,6 +2,8 @@ import requests
 import time
 import http
 import json
+import datetime
+from datetime import timedelta
 
 from django.utils import timezone
 from django.db import IntegrityError
@@ -49,6 +51,12 @@ def send_request():
                         TOURNAMENT_TEMPLATE_ID=item['TOURNAMENT_TEMPLATE_ID']
                     )
                 for event in item['EVENTS']:
+                    stage_start_time = datetime.datetime.fromtimestamp(event['STAGE_START_TIME'])
+                    current_time = datetime.datetime.now() - stage_start_time
+                    # half = event['stage']
+                    # if half == "SECOND_HALF":
+                    #     halftime = timedelta(minutes=45)
+                    #     current_time += halftime
                     data = {
                         'event_id': event['EVENT_ID'],
                         'start_time': event['START_TIME'],
@@ -72,7 +80,9 @@ def send_request():
                         'sort': event['SORT'],
                         'live_mark': event['LIVE_MARK'],
                         'red_cards_home': event.get('HOME_RED_CARDS',0),
-                        'red_cards_away': event.get('AWAY_RED_CARDS',0)
+                        'red_cards_away': event.get('AWAY_RED_CARDS',0),
+                        'stage_start_time': event['STAGE_START_TIME'],
+                        'current_time': str(current_time)
                     }
                     serializer = EventsSerializer(data=data)
                     if serializer.is_valid():

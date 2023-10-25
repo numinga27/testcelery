@@ -22,6 +22,8 @@ class Events(models.Model):
     game_time = models.TextField(null=True)
     short_name_away = models.TextField(null=True)
     away_name = models.TextField(null=True)
+    stage_start_time = models.TextField(null=True)
+    current_time = models.TextField(null=True)
     away_score_current = models.TextField(null=True)
     away_score_part_1 = models.TextField(null=True)
     away_score_part_2 = models.TextField(null=True)
