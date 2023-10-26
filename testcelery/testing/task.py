@@ -2,6 +2,7 @@ import requests
 import time
 import http
 import json
+import logging
 import datetime
 from datetime import timedelta
 
@@ -18,117 +19,124 @@ from celery import shared_task
 
 @shared_task
 def send_request():
+    logging.basicConfig(filename="app.log", filemode='w', format='%(name)s - %(levelname)s - %(message)s')
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
     result = []
-    with transaction.atomic():
+    try:
+        with transaction.atomic():
 
-        Tournament.objects.all().select_for_update().delete()
-        Events.objects.all().select_for_update().delete()
-        url = "https://fs.nimbase.cc/v1/events/live-list"
-        headers = {
-            'api-key-bravo': 'Nc4znHJeSs06G99YMVVBovHF',
-            'x-mashape-user': 'baggio093',
-            'x-mashape-subscription': 'baggio093-Mega'
-        }
-        params = {
-            'timezone': '-4',
-            'sport_id': '1',
-            'locale': 'en_INT'
-        }
-        response = requests.get(url, headers=headers, params=params)
-        parsed_data = response.json()
-        # print(parsed_data)
-        try:
-            for item in parsed_data['DATA']:
-                tournaments = Tournament.objects.filter(name=item['NAME'])
-                if tournaments.exists():
-                    tournament = tournaments.first()
-                else:
-                    tournament = Tournament.objects.create(
-                        name=item['NAME'],
-                        tournament_stage_type=item['TOURNAMENT_STAGE_TYPE'],
-                        tournament_imng=item['TOURNAMENT_IMAGE'],
-                        TOURNAMENT_TEMPLATE_ID=item['TOURNAMENT_TEMPLATE_ID']
-                    )
-                for event in item['EVENTS']:
-                    stage_start_time = datetime.datetime.fromtimestamp(event['STAGE_START_TIME'])
-                    current_time = datetime.datetime.now() - stage_start_time
-                    data = {
-                        'event_id': event['EVENT_ID'],
-                        'start_time': event['START_TIME'],
-                        'start_utime': event['START_UTIME'],
-                        'game_time': event['GAME_TIME'],
-                        'short_name_away': event['SHORTNAME_AWAY'],
-                        'away_name': event['AWAY_NAME'],
-                        'away_score_current': event['AWAY_SCORE_CURRENT'],
-                        'away_score_part_1': event['AWAY_SCORE_PART_1'],
-                        'away_score_part_2': event.get('AWAY_SCORE_PART_2', ''),
-                        'short_name_home': event['SHORTNAME_HOME'],
-                        'home_name': event['HOME_NAME'],
-                        'home_score_current': event['HOME_SCORE_CURRENT'],
-                        'home_score_part_1': event['HOME_SCORE_PART_1'],
-                        'home_score_part_2': event.get('HOME_SCORE_PART_2', ''),
-                        'home_images': event.get('HOME_IMAGES'),
-                        'away_images': event.get('AWAY_IMAGES'),
-                        'stge_type': event['STAGE_TYPE'],
-                        'merge_stage_tupe': event['MERGE_STAGE_TYPE'],
-                        'stage': event['STAGE'],
-                        'sort': event['SORT'],
-                        'live_mark': event['LIVE_MARK'],
-                        'red_cards_home': event.get('HOME_RED_CARDS',0),
-                        'red_cards_away': event.get('AWAY_RED_CARDS',0),
-                        'stage_start_time': event['STAGE_START_TIME'],
-                        'current_time': str(current_time)
-                    }
-                    if event['STAGE'] == "SECOND_HALF":
-                        current_time += timedelta(minutes=45)
-                        data['current_time'] = str(current_time)
-                    serializer = EventsSerializer(data=data)
-                    if serializer.is_valid():
-                        event_objects = Events.objects.filter(
-                            event_id=event['EVENT_ID'])
-                        if event_objects.exists():
-                            event_object = event_objects.first()
-                            result.append(serializer.data)
-                            serializer.update(
-                                event_object, serializer.validated_data)
-                        else:
-                            event_object = Events.objects.create(
-                                **serializer.validated_data)
-                        tournament.events.add(event_object)
-                    else:
-                        print(serializer.errors)
-        except KeyError:
-            pass
-        event_ids = Events.objects.values_list('event_id', flat=True)
-        for event_idss in event_ids:
-            EventId.objects.update_or_create(live_event_id=event_idss)
-        conn = http.client.HTTPSConnection(
-            "fs.nimbase.cc")
-
-        headers = {
-            'api-key-bravo': 'Nc4znHJeSs06G99YMVVBovHF',
-            'x-mashape-user': 'baggio093',
-            'x-mashape-subscription': 'baggio093-Mega'
-        }
-
-        for event_idss in event_ids:
+            Tournament.objects.all().select_for_update().delete()
+            Events.objects.all().select_for_update().delete()
+            url = "https://fs.nimbase.cc/v1/events/live-list"
+            headers = {
+                'api-key-bravo': 'Nc4znHJeSs06G99YMVVBovHF',
+                'x-mashape-user': 'baggio093',
+                'x-mashape-subscription': 'baggio093-Mega'
+            }
+            params = {
+                'timezone': '-4',
+                'sport_id': '1',
+                'locale': 'en_INT'
+            }
+            response = requests.get(url, headers=headers, params=params)
+            parsed_data = response.json()
+            # print(parsed_data)
             try:
-                conn.request(
-                    "GET", f"/v1/events/statistics?event_id={event_idss}&locale=en_INT", headers=headers)
-                res = conn.getresponse()
-                data = res.read()
-                json_data = json.loads(data)
-                for item in json_data['DATA'][0]['GROUPS'][0]['ITEMS']:
-                    if item["INCIDENT_NAME"] == "Yellow Cards":
-                        yellow_cards_home = item['VALUE_HOME']
-                        yellow_cards_away = item['VALUE_AWAY']
-                        break
-                event = Events.objects.get(event_id=event_idss)
-                event.yellow_cards_home = yellow_cards_home
-                event.yellow_cards_away = yellow_cards_away
-                event.save()
-            except Exception:
+                for item in parsed_data['DATA']:
+                    tournaments = Tournament.objects.filter(name=item['NAME'])
+                    if tournaments.exists():
+                        tournament = tournaments.first()
+                    else:
+                        tournament = Tournament.objects.create(
+                            name=item['NAME'],
+                            tournament_stage_type=item['TOURNAMENT_STAGE_TYPE'],
+                            tournament_imng=item['TOURNAMENT_IMAGE'],
+                            TOURNAMENT_TEMPLATE_ID=item['TOURNAMENT_TEMPLATE_ID']
+                        )
+                    for event in item['EVENTS']:
+                        stage_start_time = datetime.datetime.fromtimestamp(event['STAGE_START_TIME'])
+                        current_time = datetime.datetime.now() - stage_start_time
+                        data = {
+                            'event_id': event['EVENT_ID'],
+                            'start_time': event['START_TIME'],
+                            'start_utime': event['START_UTIME'],
+                            'game_time': event['GAME_TIME'],
+                            'short_name_away': event['SHORTNAME_AWAY'],
+                            'away_name': event['AWAY_NAME'],
+                            'away_score_current': event['AWAY_SCORE_CURRENT'],
+                            'away_score_part_1': event['AWAY_SCORE_PART_1'],
+                            'away_score_part_2': event.get('AWAY_SCORE_PART_2', ''),
+                            'short_name_home': event['SHORTNAME_HOME'],
+                            'home_name': event['HOME_NAME'],
+                            'home_score_current': event['HOME_SCORE_CURRENT'],
+                            'home_score_part_1': event['HOME_SCORE_PART_1'],
+                            'home_score_part_2': event.get('HOME_SCORE_PART_2', ''),
+                            'home_images': event.get('HOME_IMAGES'),
+                            'away_images': event.get('AWAY_IMAGES'),
+                            'stge_type': event['STAGE_TYPE'],
+                            'merge_stage_tupe': event['MERGE_STAGE_TYPE'],
+                            'stage': event['STAGE'],
+                            'sort': event['SORT'],
+                            'live_mark': event['LIVE_MARK'],
+                            'red_cards_home': event.get('HOME_RED_CARDS',0),
+                            'red_cards_away': event.get('AWAY_RED_CARDS',0),
+                            'stage_start_time': event['STAGE_START_TIME'],
+                            'current_time': str(current_time)
+                        }
+                        if event['STAGE'] == "SECOND_HALF":
+                            current_time += timedelta(minutes=45)
+                            data['current_time'] = str(current_time)
+                        serializer = EventsSerializer(data=data)
+                        if serializer.is_valid():
+                            event_objects = Events.objects.filter(
+                                event_id=event['EVENT_ID'])
+                            if event_objects.exists():
+                                event_object = event_objects.first()
+                                result.append(serializer.data)
+                                serializer.update(
+                                    event_object, serializer.validated_data)
+                            else:
+                                event_object = Events.objects.create(
+                                    **serializer.validated_data)
+                            tournament.events.add(event_object)
+                        else:
+                            print(serializer.errors)
+            except KeyError:
                 pass
+            event_ids = Events.objects.values_list('event_id', flat=True)
+            for event_idss in event_ids:
+                EventId.objects.update_or_create(live_event_id=event_idss)
+            conn = http.client.HTTPSConnection(
+                "fs.nimbase.cc")
+
+            headers = {
+                'api-key-bravo': 'Nc4znHJeSs06G99YMVVBovHF',
+                'x-mashape-user': 'baggio093',
+                'x-mashape-subscription': 'baggio093-Mega'
+            }
+
+            for event_idss in event_ids:
+                try:
+                    conn.request(
+                        "GET", f"/v1/events/statistics?event_id={event_idss}&locale=en_INT", headers=headers)
+                    res = conn.getresponse()
+                    data = res.read()
+                    json_data = json.loads(data)
+                    for item in json_data['DATA'][0]['GROUPS'][0]['ITEMS']:
+                        if item["INCIDENT_NAME"] == "Yellow Cards":
+                            yellow_cards_home = item['VALUE_HOME']
+                            yellow_cards_away = item['VALUE_AWAY']
+                            break
+                    event = Events.objects.get(event_id=event_idss)
+                    event.yellow_cards_home = yellow_cards_home
+                    event.yellow_cards_away = yellow_cards_away
+                    event.save()
+                except Exception:
+                    pass
+    except Exception as e:
+    # Если возникла ошибка, записываем ее в лог
+        logger.error("Произошла ошибка при получении матчей: %s", e)            
 
     return Tournament.objects.all()
 
