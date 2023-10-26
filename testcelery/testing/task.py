@@ -14,11 +14,12 @@ from .models import (Events, Tournament, HockeyLiveEvents,
                      ScheduledHockey, EndedHockey, EventId)
 from .serialiazers import EventsSerializer, HockeyLiveEventsSerializer
 from django.db import transaction
+from requests.exceptions import RequestException
 from celery import shared_task
 
 
 @shared_task
-def send_request():
+def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=True):
     logging.basicConfig(filename="app.log", filemode='w', format='%(name)s - %(levelname)s - %(message)s')
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
