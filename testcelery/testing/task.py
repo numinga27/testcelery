@@ -19,7 +19,6 @@ from celery import shared_task
 @shared_task
 def send_request():
     result = []
-    # try:
     with transaction.atomic():
 
         Tournament.objects.all().select_for_update().delete()
@@ -103,8 +102,6 @@ def send_request():
         event_ids = Events.objects.values_list('event_id', flat=True)
         for event_idss in event_ids:
             EventId.objects.update_or_create(live_event_id=event_idss)
-
-        # print(event_ids)
         conn = http.client.HTTPSConnection(
             "fs.nimbase.cc")
 
@@ -115,7 +112,6 @@ def send_request():
         }
 
         for event_idss in event_ids:
-            # print(event_idss)
             try:
                 conn.request(
                     "GET", f"/v1/events/statistics?event_id={event_idss}&locale=en_INT", headers=headers)
@@ -127,23 +123,12 @@ def send_request():
                         yellow_cards_home = item['VALUE_HOME']
                         yellow_cards_away = item['VALUE_AWAY']
                         break
-                # for items in json_data['DATA'][0]['GROUPS'][0]['ITEMS']:
-                #     if items["INCIDENT_NAME"] == "Red Cards":
-                #         red_cards_home = items['VALUE_HOME']
-                #         red_cards_away = items['VALUE_AWAY']
-                #         break
                 event = Events.objects.get(event_id=event_idss)
                 event.yellow_cards_home = yellow_cards_home
                 event.yellow_cards_away = yellow_cards_away
-                # event.red_cards_home = red_cards_home
-                # event.red_cards_away = red_cards_away
                 event.save()
             except Exception:
                 pass
-    # except Exception as e:
-    #     # Если возникла ошибка, откатываем транзакцию
-    #     with transaction.atomic():
-    #         transaction.set_rollback(True)
 
     return Tournament.objects.all()
 
