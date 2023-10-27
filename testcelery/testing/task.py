@@ -1,5 +1,5 @@
 import requests
-import time
+import ast
 import http
 import json
 import logging
@@ -18,9 +18,26 @@ from requests.exceptions import RequestException
 from celery import shared_task
 
 
+def upload_image(s):
+    url = 'https://static.stat.bet/api/upload'
+    data = {
+        'api_key': 'f99454e5d9c51487bb4e051e9ed5875b545df1dd90d859820b4387a4666fda8b',
+        'photo_url': s
+    }
+
+    response = requests.post(url, data=data)
+    if response.status_code == 200:
+        data = response.json()
+        uploaded_url = data['path']
+        return uploaded_url
+    else:
+        print(f"Ошибка {response.status_code}: {response.text}")
+
+
 @shared_task
 def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=True):
-    logging.basicConfig(filename="app.log", filemode='w', format='%(name)s - %(levelname)s - %(message)s')
+    logging.basicConfig(filename="app.log", filemode='w',
+                        format='%(name)s - %(levelname)s - %(message)s')
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     result = []
@@ -49,14 +66,22 @@ def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=Tru
                     if tournaments.exists():
                         tournament = tournaments.first()
                     else:
+                        tournament_imng = upload_image(
+                            item['TOURNAMENT_IMAGE'])
+                        # print(tournament_imng)
                         tournament = Tournament.objects.create(
                             name=item['NAME'],
                             tournament_stage_type=item['TOURNAMENT_STAGE_TYPE'],
-                            tournament_imng=item['TOURNAMENT_IMAGE'],
+                            tournament_imng=str(tournament_imng),
                             TOURNAMENT_TEMPLATE_ID=item['TOURNAMENT_TEMPLATE_ID']
                         )
                     for event in item['EVENTS']:
-                        stage_start_time = datetime.datetime.fromtimestamp(event['STAGE_START_TIME'])
+                        home_img = [upload_image(
+                            event.get('HOME_IMAGES'))]
+                        away_img = [upload_image(event.get('AWAY_IMAGES'))]
+                        print(home_img,away_img)
+                        stage_start_time = datetime.datetime.fromtimestamp(
+                            event['STAGE_START_TIME'])
                         current_time = datetime.datetime.now() - stage_start_time
                         data = {
                             'event_id': event['EVENT_ID'],
@@ -73,21 +98,23 @@ def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=Tru
                             'home_score_current': event['HOME_SCORE_CURRENT'],
                             'home_score_part_1': event['HOME_SCORE_PART_1'],
                             'home_score_part_2': event.get('HOME_SCORE_PART_2', ''),
-                            'home_images': event.get('HOME_IMAGES'),
-                            'away_images': event.get('AWAY_IMAGES'),
+                            'home_images':home_img,
+                            'away_images': away_img,
                             'stge_type': event['STAGE_TYPE'],
                             'merge_stage_tupe': event['MERGE_STAGE_TYPE'],
                             'stage': event['STAGE'],
                             'sort': event['SORT'],
                             'live_mark': event['LIVE_MARK'],
-                            'red_cards_home': event.get('HOME_RED_CARDS',0),
-                            'red_cards_away': event.get('AWAY_RED_CARDS',0),
+                            'red_cards_home': event.get('HOME_RED_CARDS', 0),
+                            'red_cards_away': event.get('AWAY_RED_CARDS', 0),
                             'stage_start_time': event['STAGE_START_TIME'],
                             'current_time': str(current_time)
                         }
                         if event['STAGE'] == "SECOND_HALF":
                             current_time += timedelta(minutes=45)
                             data['current_time'] = str(current_time)
+                        # data['away_images'] = away_img
+                        # data['home_images'] = home_img
                         serializer = EventsSerializer(data=data)
                         if serializer.is_valid():
                             event_objects = Events.objects.filter(
@@ -136,8 +163,8 @@ def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=Tru
                 except Exception:
                     pass
     except Exception as e:
-    # Если возникла ошибка, записываем ее в лог
-        logger.error("Произошла ошибка при получении матчей: %s", e)            
+        # Если возникла ошибка, записываем ее в лог
+        logger.error("Произошла ошибка при получении матчей: %s", e)
 
     return Tournament.objects.all()
 
