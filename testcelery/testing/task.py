@@ -38,7 +38,7 @@ def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=Tru
             params = {
                 'timezone': '-4',
                 'sport_id': '1',
-                'locale': 'en_INT'
+                'locale': 'ru_RU'
             }
             response = requests.get(url, headers=headers, params=params)
             parsed_data = response.json()
@@ -120,7 +120,7 @@ def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=Tru
             for event_idss in event_ids:
                 try:
                     conn.request(
-                        "GET", f"/v1/events/statistics?event_id={event_idss}&locale=en_INT", headers=headers)
+                        "GET", f"/v1/events/statistics?event_id={event_idss}&locale=ru_RU", headers=headers)
                     res = conn.getresponse()
                     data = res.read()
                     json_data = json.loads(data)
@@ -160,7 +160,7 @@ def send_request_hockey():
         params = {
             'timezone': '-4',
             'sport_id': '4',
-            'locale': 'en_INT'
+            'locale': 'ru_RU'
         }
         response = requests.get(url, headers=headers, params=params)
         parsed_data = response.json()
@@ -244,7 +244,7 @@ def send_request_endedmatch():
             EndedMatch.objects.all().select_for_update().delete()
             url = "https://fs.nimbase.cc/v1/events/list"
             querystring = {"timezone": "-4", "indent_days": "-1",
-                           "locale": "en_INT", "sport_id": "1"}
+                           "locale": "ru_RU", "sport_id": "1"}
             headers = {
                 'api-key-bravo': 'Nc4znHJeSs06G99YMVVBovHF',
                 'x-mashape-user': 'baggio093',
@@ -306,7 +306,7 @@ def send_request_scheluded():
             Scheduled.objects.all().select_for_update().delete()
             url = "https://fs.nimbase.cc/v1/events/list"
             querystring = {"timezone": "-4", "indent_days": "-1",
-                           "locale": "en_INT", "sport_id": "1"}
+                           "locale": "ru_RU", "sport_id": "1"}
             headers = {
                 'api-key-bravo': 'Nc4znHJeSs06G99YMVVBovHF',
                 'x-mashape-user': 'baggio093',
@@ -358,7 +358,7 @@ def request_all():
             All.objects.all().select_for_update().delete()
             url = "https://fs.nimbase.cc/v1/events/list"
             querystring = {"timezone": "-4", "indent_days": "-1",
-                           "locale": "en_INT", "sport_id": "1"}
+                           "locale": "ru_RU", "sport_id": "1"}
             headers = {
                 'api-key-bravo': 'Nc4znHJeSs06G99YMVVBovHF',
                 'x-mashape-user': 'baggio093',
@@ -419,7 +419,7 @@ def request_all_hockey():
             AllHockey.objects.all().select_for_update().delete()
             url = "https://fs.nimbase.cc/v1/events/list"
             querystring = {"timezone": "-4", "indent_days": "-1",
-                           "locale": "en_INT", "sport_id": "4"}
+                           "locale": "ru_RU", "sport_id": "4"}
             headers = {
                 'api-key-bravo': 'Nc4znHJeSs06G99YMVVBovHF',
                 'x-mashape-user': 'baggio093',
@@ -484,7 +484,7 @@ def request_scheduled_hockey():
             ScheduledHockey.objects.all().select_for_update().delete()
             url = "https://fs.nimbase.cc/v1/events/list"
             querystring = {"timezone": "-4", "indent_days": "-1",
-                           "locale": "en_INT", "sport_id": "4"}
+                           "locale": "ru_RU", "sport_id": "4"}
             headers = {
                 'api-key-bravo': 'Nc4znHJeSs06G99YMVVBovHF',
                 'x-mashape-user': 'baggio093',
@@ -536,7 +536,7 @@ def request_ended_hockey():
             EndedHockey.objects.all().select_for_update().delete()
             url = "https://fs.nimbase.cc/v1/events/list"
             querystring = {"timezone": "-4", "indent_days": "-1",
-                           "locale": "en_INT", "sport_id": "1"}
+                           "locale": "ru_RU", "sport_id": "1"}
             headers = {
                 'api-key-bravo': 'Nc4znHJeSs06G99YMVVBovHF',
                 'x-mashape-user': 'baggio093',
