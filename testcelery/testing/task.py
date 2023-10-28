@@ -79,7 +79,7 @@ def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=Tru
                         home_img = [upload_image(
                             event.get('HOME_IMAGES'))]
                         away_img = [upload_image(event.get('AWAY_IMAGES'))]
-                        print(home_img,away_img)
+                        print(home_img, away_img)
                         stage_start_time = datetime.datetime.fromtimestamp(
                             event['STAGE_START_TIME'])
                         current_time = datetime.datetime.now() - stage_start_time
@@ -198,13 +198,18 @@ def send_request_hockey():
                 if tournament.exists():
                     tournament = tournament.first()
                 else:
+                    tournament_img = upload_image(
+                        item['TOURNAMENT_IMAGE'])
                     tournament = TournamentHockey.objects.create(
                         name=item['NAME'],
                         tournament_stage_type=item['TOURNAMENT_STAGE_TYPE'],
-                        tournament_imng=item['TOURNAMENT_IMAGE'],
+                        tournament_imng=tournament_img,
                         TOURNAMENT_TEMPLATE_ID=item['TOURNAMENT_TEMPLATE_ID']
                     )
                 for event in item['EVENTS']:
+                    home_img = [upload_image(
+                            event.get('HOME_IMAGES'))]
+                    away_img = [upload_image(event.get('AWAY_IMAGES'))]
                     data = {
                         'events_id': event['EVENT_ID'],
                         'start_time': event['START_TIME'],
@@ -241,6 +246,8 @@ def send_request_hockey():
                         'away_score_fullL': event['AWAY_SCORE_FULL'],
                         'away_score_part_3': event.get('AWAY_SCORE_PART_3', '')
                     }
+                    data['away_images'] = away_img
+                    data['home_images'] = home_img
                     serializer = HockeyLiveEventsSerializer(data=data)
                     if serializer.is_valid():
                         event_objects = HockeyLiveEvents.objects.filter(
