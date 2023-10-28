@@ -98,8 +98,8 @@ def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=Tru
                             'home_score_current': event['HOME_SCORE_CURRENT'],
                             'home_score_part_1': event['HOME_SCORE_PART_1'],
                             'home_score_part_2': event.get('HOME_SCORE_PART_2', ''),
-                            'home_images':home_img,
-                            'away_images': away_img,
+                            'home_images': event.get('HOME_IMAGES'),
+                            'away_images': event.get('AWAY_IMAGES'),
                             'stge_type': event['STAGE_TYPE'],
                             'merge_stage_tupe': event['MERGE_STAGE_TYPE'],
                             'stage': event['STAGE'],
@@ -113,8 +113,8 @@ def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=Tru
                         if event['STAGE'] == "SECOND_HALF":
                             current_time += timedelta(minutes=45)
                             data['current_time'] = str(current_time)
-                        # data['away_images'] = away_img
-                        # data['home_images'] = home_img
+                        data['away_images'] = away_img
+                        data['home_images'] = home_img
                         serializer = EventsSerializer(data=data)
                         if serializer.is_valid():
                             event_objects = Events.objects.filter(
