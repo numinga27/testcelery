@@ -79,7 +79,7 @@ def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=Tru
                         home_img = [upload_image(
                             event.get('HOME_IMAGES'))]
                         away_img = [upload_image(event.get('AWAY_IMAGES'))]
-                        print(home_img, away_img)
+                        # print(home_img, away_img)
                         stage_start_time = datetime.datetime.fromtimestamp(
                             event['STAGE_START_TIME'])
                         current_time = datetime.datetime.now() - stage_start_time
