@@ -170,7 +170,7 @@ def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=Tru
 
 
 @shared_task
-def send_request_hockey():
+def send_request_hockey(bind=True, autoretry_for=(RequestException,), retry_backoff=True):
     # try:
     with transaction.atomic():
         # tournament_hockey = TournamentHockey.objects.all()
