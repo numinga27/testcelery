@@ -141,10 +141,10 @@ CELERY_TIMEZONE = 'Europe/Moscow'
 CELERY_BEAT_SCHEDULE = {
     'parse-every-30-seconds': {
         'task': 'testing.task.send_request',
-        'schedule': 30.0,
+        'schedule': 60.0,
     },
     'pare-hockey': {
         'task': 'testing.task.send_request',
-        'schedule': 30.0,
+        'schedule': 60.0,
     },
 }
