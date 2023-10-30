@@ -6,9 +6,7 @@ import logging
 import datetime
 from datetime import timedelta
 
-from django.utils import timezone
-from django.db import IntegrityError
-from rest_framework.response import Response
+
 from .models import (Events, Tournament, HockeyLiveEvents,
                      TournamentHockey, EndedMatch, Scheduled, All, AllHockey,
                      ScheduledHockey, EndedHockey, EventId)
@@ -61,14 +59,14 @@ def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=Tru
         # print(parsed_data)
         try:
             for item in parsed_data['DATA']:
-                tournaments = Tournament.objects.filter(name=item['NAME'])
-                if tournaments.exists():
-                    tournament = tournaments.first()
-                else:
-                    tournament_imng = upload_image(
-                        item['TOURNAMENT_IMAGE'])
+                # tournaments = Tournament.objects.filter(name=item['NAME'])
+                # # if tournaments.exists():
+                # #     tournament = tournaments.first()
+                # # else:
+                tournament_imng = upload_image(
+                    item['TOURNAMENT_IMAGE'])
                     # print(tournament_imng)
-                    tournament = Tournament.objects.create(
+                tournament = Tournament.objects.create(
                         name=item['NAME'],
                         tournament_stage_type=item['TOURNAMENT_STAGE_TYPE'],
                         tournament_imng=str(tournament_imng),
@@ -131,36 +129,36 @@ def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=Tru
                         print(serializer.errors)
         except KeyError:
             pass
-        event_ids = Events.objects.values_list('event_id', flat=True)
-        for event_idss in event_ids:
-            EventId.objects.update_or_create(live_event_id=event_idss)
-        conn = http.client.HTTPSConnection(
-            "fs.nimbase.cc")
+        # event_ids = Events.objects.values_list('event_id', flat=True)
+        # for event_idss in event_ids:
+        #     EventId.objects.update_or_create(live_event_id=event_idss)
+        # conn = http.client.HTTPSConnection(
+        #     "fs.nimbase.cc")
 
-        headers = {
-            'api-key-bravo': 'Nc4znHJeSs06G99YMVVBovHF',
-            'x-mashape-user': 'baggio093',
-            'x-mashape-subscription': 'baggio093-Mega'
-        }
+        # headers = {
+        #     'api-key-bravo': 'Nc4znHJeSs06G99YMVVBovHF',
+        #     'x-mashape-user': 'baggio093',
+        #     'x-mashape-subscription': 'baggio093-Mega'
+        # }
 
-        for event_idss in event_ids:
-            try:
-                conn.request(
-                    "GET", f"/v1/events/statistics?event_id={event_idss}&locale=ru_RU", headers=headers)
-                res = conn.getresponse()
-                data = res.read()
-                json_data = json.loads(data)
-                for item in json_data['DATA'][0]['GROUPS'][0]['ITEMS']:
-                    if item["INCIDENT_NAME"] == "Yellow Cards":
-                        yellow_cards_home = item['VALUE_HOME']
-                        yellow_cards_away = item['VALUE_AWAY']
-                        break
-                event = Events.objects.get(event_id=event_idss)
-                event.yellow_cards_home = yellow_cards_home
-                event.yellow_cards_away = yellow_cards_away
-                event.save()
-            except Exception:
-                pass
+        # for event_idss in event_ids:
+        #     try:
+        #         conn.request(
+        #             "GET", f"/v1/events/statistics?event_id={event_idss}&locale=ru_RU", headers=headers)
+        #         res = conn.getresponse()
+        #         data = res.read()
+        #         json_data = json.loads(data)
+        #         for item in json_data['DATA'][0]['GROUPS'][0]['ITEMS']:
+        #             if item["INCIDENT_NAME"] == "Yellow Cards":
+        #                 yellow_cards_home = item['VALUE_HOME']
+        #                 yellow_cards_away = item['VALUE_AWAY']
+        #                 break
+        #         event = Events.objects.get(event_id=event_idss)
+        #         event.yellow_cards_home = yellow_cards_home
+        #         event.yellow_cards_away = yellow_cards_away
+        #         event.save()
+        #     except Exception:
+        #         pass
     except Exception as e:
         # Если возникла ошибка, записываем ее в лог
         logger.error("Произошла ошибка при получении матчей: %s", e)
