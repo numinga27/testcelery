@@ -153,7 +153,7 @@ class EventDetails(APIView):
 
 class TournamentViewSet(viewsets.ModelViewSet):
     ''' Основаной вью для лайва'''
-    queryset = Tournament.objects.all()
+    Tournament.objects.filter(events__stge_type='LIVE') 
     serializer_class = TournamentSerializer
 
 

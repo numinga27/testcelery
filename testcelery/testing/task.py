@@ -41,8 +41,8 @@ def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=Tru
     result = []
     try:
 
-        Tournament.objects.all().select_for_update().delete()
-        Events.objects.all().select_for_update().delete()
+        # Tournament.objects.all().select_for_update().delete()
+        # Events.objects.all().select_for_update().delete()
         url = "https://fs.nimbase.cc/v1/events/live-list"
         headers = {
             'api-key-bravo': 'Nc4znHJeSs06G99YMVVBovHF',
@@ -66,12 +66,16 @@ def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=Tru
                 tournament_imng = upload_image(
                     item['TOURNAMENT_IMAGE'])
                     # print(tournament_imng)
-                tournament = Tournament.objects.create(
-                        name=item['NAME'],
-                        tournament_stage_type=item['TOURNAMENT_STAGE_TYPE'],
-                        tournament_imng=str(tournament_imng),
-                        TOURNAMENT_TEMPLATE_ID=item['TOURNAMENT_TEMPLATE_ID']
-                    )
+                tournament_data = {
+                    'name': item['NAME'],
+                    'tournament_stage_type': item['TOURNAMENT_STAGE_TYPE'],
+                    'tournament_imng': str(tournament_imng),
+                    'TOURNAMENT_TEMPLATE_ID': item['TOURNAMENT_TEMPLATE_ID']
+                }
+                tournament, created = Tournament.objects.update_or_create(
+                    TOURNAMENT_TEMPLATE_ID=item['TOURNAMENT_TEMPLATE_ID'], 
+                    defaults=tournament_data
+                )
                 for event in item['EVENTS']:
                     home_img = [upload_image(
                         event.get('HOME_IMAGES'))]
@@ -114,16 +118,8 @@ def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=Tru
                     data['home_images'] = home_img
                     serializer = EventsSerializer(data=data)
                     if serializer.is_valid():
-                        event_objects = Events.objects.filter(
-                            event_id=event['EVENT_ID'])
-                        if event_objects.exists():
-                            event_object = event_objects.first()
-                            result.append(serializer.data)
-                            serializer.update(
-                                event_object, serializer.validated_data)
-                        else:
-                            event_object = Events.objects.create(
-                                **serializer.validated_data)
+                        event_object, created = Events.objects.update_or_create(
+                        event_id=event['EVENT_ID'], defaults=serializer.validated_data)
                         tournament.events.add(event_object)
                     else:
                         print(serializer.errors)
@@ -188,6 +184,7 @@ def send_request_hockey(bind=True, autoretry_for=(RequestException,), retry_back
         parsed_data = response.json()
         try:
             for item in parsed_data['DATA']:
+
                 tournament = TournamentHockey.objects.filter(
                     name=item['NAME'])
                 if tournament.exists():
