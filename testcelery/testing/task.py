@@ -33,16 +33,25 @@ def upload_image(s):
 
 
 @shared_task
+def delete():
+    Tournament.objects.all().select_for_update().delete()
+    Events.objects.all().select_for_update().delete()
+    TournamentHockey.objects.all().select_for_update().delete()
+    HockeyLiveEvents.objects.all().select_for_update().delete()
+
+
+@shared_task
 def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=True):
     logging.basicConfig(filename="app.log", filemode='w',
                         format='%(name)s - %(levelname)s - %(message)s')
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     result = []
+    delete()
     try:
 
-        Tournament.objects.all().select_for_update().delete()
-        Events.objects.all().select_for_update().delete()
+        # Tournament.objects.all().select_for_update().delete()
+        # Events.objects.all().select_for_update().delete()
         url = "https://fs.nimbase.cc/v1/events/live-list"
         headers = {
             'api-key-bravo': 'Nc4znHJeSs06G99YMVVBovHF',
@@ -65,7 +74,7 @@ def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=Tru
                 # # else:
                 tournament_imng = upload_image(
                     item['TOURNAMENT_IMAGE'])
-                    # print(tournament_imng)
+                # print(tournament_imng)
                 tournament_data = {
                     'name': item['NAME'],
                     'tournament_stage_type': item['TOURNAMENT_STAGE_TYPE'],
@@ -73,7 +82,7 @@ def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=Tru
                     'TOURNAMENT_TEMPLATE_ID': item['TOURNAMENT_TEMPLATE_ID']
                 }
                 tournament, created = Tournament.objects.update_or_create(
-                    TOURNAMENT_TEMPLATE_ID=item['TOURNAMENT_TEMPLATE_ID'], 
+                    TOURNAMENT_TEMPLATE_ID=item['TOURNAMENT_TEMPLATE_ID'],
                     defaults=tournament_data
                 )
                 for event in item['EVENTS']:
@@ -119,7 +128,7 @@ def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=Tru
                     serializer = EventsSerializer(data=data)
                     if serializer.is_valid():
                         event_object, created = Events.objects.update_or_create(
-                        event_id=event['EVENT_ID'], defaults=serializer.validated_data)
+                            event_id=event['EVENT_ID'], defaults=serializer.validated_data)
                         tournament.events.add(event_object)
                     else:
                         print(serializer.errors)
@@ -168,102 +177,104 @@ def send_request_hockey(bind=True, autoretry_for=(RequestException,), retry_back
     # with transaction.atomic():
     #     TournamentHockey.objects.all().select_for_update().delete()
     #     HockeyLiveEvents.objects.all().select_for_update().delete()
+    delete()
 
     url = "https://fs.nimbase.cc/v1/events/live-list"
     headers = {
-            'api-key-bravo': 'Nc4znHJeSs06G99YMVVBovHF',
-            'x-mashape-user': 'baggio093',
-            'x-mashape-subscription': 'baggio093-Mega'
-        }
+        'api-key-bravo': 'Nc4znHJeSs06G99YMVVBovHF',
+        'x-mashape-user': 'baggio093',
+        'x-mashape-subscription': 'baggio093-Mega'
+    }
     params = {
-            'timezone': '-4',
-            'sport_id': '4',
-            'locale': 'ru_RU'
-        }
+        'timezone': '-4',
+        'sport_id': '4',
+        'locale': 'ru_RU'
+    }
     response = requests.get(url, headers=headers, params=params)
     parsed_data = response.json()
     try:
-            for item in parsed_data['DATA']:
+        for item in parsed_data['DATA']:
 
-                # tournament = TournamentHockey.objects.filter(
-                #     name=item['NAME'])
-                # if tournament.exists():
-                #     tournament = tournament.first()
-                # else:
-                tournament_img = upload_image(
-                        item['TOURNAMENT_IMAGE'])
-                tournament_data = {
-                    'name': item['NAME'],
-                    'tournament_stage_type': item['TOURNAMENT_STAGE_TYPE'],
-                    'tournament_imng': str(tournament_img),
-                    'TOURNAMENT_TEMPLATE_ID': item['TOURNAMENT_TEMPLATE_ID']
+            # tournament = TournamentHockey.objects.filter(
+            #     name=item['NAME'])
+            # if tournament.exists():
+            #     tournament = tournament.first()
+            # else:
+            tournament_img = upload_image(
+                item['TOURNAMENT_IMAGE'])
+            tournament_data = {
+                'name': item['NAME'],
+                'tournament_stage_type': item['TOURNAMENT_STAGE_TYPE'],
+                'tournament_imng': str(tournament_img),
+                'TOURNAMENT_TEMPLATE_ID': item['TOURNAMENT_TEMPLATE_ID']
+            }
+            tournament, created = TournamentHockey.objects.update_or_create(
+                TOURNAMENT_TEMPLATE_ID=item['TOURNAMENT_TEMPLATE_ID'],
+                defaults=tournament_data
+            )
+            for event in item['EVENTS']:
+                home_img = [upload_image(
+                    event.get('HOME_IMAGES'))]
+                away_img = [upload_image(event.get('AWAY_IMAGES'))]
+                data = {
+                    'events_id': event['EVENT_ID'],
+                    'start_time': event['START_TIME'],
+                    'start_utime': event['START_UTIME'],
+                    'game_time': event['GAME_TIME'],
+                    'shortname_away': event['SHORTNAME_AWAY'],
+                    'away_name': event['AWAY_NAME'],
+                    'away_current_score': event['AWAY_SCORE_CURRENT'],
+                    'away_score_part_1': event['AWAY_SCORE_PART_1'],
+                    'away_score_part_2': event.get('AWAY_SCORE_PART_2', ''),
+                    'away_images': event.get('AWAY_IMAGES', ''),
+                    'shortname_home': event['SHORTNAME_HOME'],
+                    'home_name': event['HOME_NAME'],
+                    'home_current_score': event['HOME_SCORE_CURRENT'],
+                    'home_score_part_1': event['HOME_SCORE_PART_1'],
+                    'home_score_part_2': event.get('HOME_SCORE_PART_2', ''),
+                    'home_images': event.get('HOME_IMAGES', ''),
+                    'stge_type': event['STAGE_TYPE'],
+                    'merge_stage_tupe': event['MERGE_STAGE_TYPE'],
+                    'stage': event['STAGE'],
+                    'sort': event['SORT'],
+                    'live_mark': event['LIVE_MARK'],
+                    'has_lineps': event['HAS_LINEPS'],
+                    'stage_start_time': event['STAGE_START_TIME'],
+                    'playing_in_sets': event['PLAYING_ON_SETS'],
+                    'recent_overs': event['RECENT_OVERS'],
+                    'home_participant_name_one': event['HOME_PARTICIPANT_NAME_ONE'],
+                    'home_event_participant_id': event['HOME_EVENT_PARTICIPANT_ID'],
+                    'home_goal_var': event['HOME_GOAL_VAR'],
+                    'home_score_part_3': event.get('HOME_SCORE_PART_3', ''),
+                    'away_participant_name_one': event['AWAY_PARTICIPANT_NAME_ONE'],
+                    'away_event_participant_id': event['AWAY_EVENT_PARTICIPANT_ID'],
+                    'away_goal_var': event['AWAY_GOAL_VAR'],
+                    'away_score_fullL': event['AWAY_SCORE_FULL'],
+                    'away_score_part_3': event.get('AWAY_SCORE_PART_3', '')
                 }
-                tournament, created = TournamentHockey.objects.update_or_create(
-                    TOURNAMENT_TEMPLATE_ID=item['TOURNAMENT_TEMPLATE_ID'], 
-                    defaults=tournament_data
-                )
-                for event in item['EVENTS']:
-                    home_img = [upload_image(
-                        event.get('HOME_IMAGES'))]
-                    away_img = [upload_image(event.get('AWAY_IMAGES'))]
-                    data = {
-                        'events_id': event['EVENT_ID'],
-                        'start_time': event['START_TIME'],
-                        'start_utime': event['START_UTIME'],
-                        'game_time': event['GAME_TIME'],
-                        'shortname_away': event['SHORTNAME_AWAY'],
-                        'away_name': event['AWAY_NAME'],
-                        'away_current_score': event['AWAY_SCORE_CURRENT'],
-                        'away_score_part_1': event['AWAY_SCORE_PART_1'],
-                        'away_score_part_2': event.get('AWAY_SCORE_PART_2', ''),
-                        'away_images': event.get('AWAY_IMAGES', ''),
-                        'shortname_home': event['SHORTNAME_HOME'],
-                        'home_name': event['HOME_NAME'],
-                        'home_current_score': event['HOME_SCORE_CURRENT'],
-                        'home_score_part_1': event['HOME_SCORE_PART_1'],
-                        'home_score_part_2': event.get('HOME_SCORE_PART_2', ''),
-                        'home_images': event.get('HOME_IMAGES', ''),
-                        'stge_type': event['STAGE_TYPE'],
-                        'merge_stage_tupe': event['MERGE_STAGE_TYPE'],
-                        'stage': event['STAGE'],
-                        'sort': event['SORT'],
-                        'live_mark': event['LIVE_MARK'],
-                        'has_lineps': event['HAS_LINEPS'],
-                        'stage_start_time': event['STAGE_START_TIME'],
-                        'playing_in_sets': event['PLAYING_ON_SETS'],
-                        'recent_overs': event['RECENT_OVERS'],
-                        'home_participant_name_one': event['HOME_PARTICIPANT_NAME_ONE'],
-                        'home_event_participant_id': event['HOME_EVENT_PARTICIPANT_ID'],
-                        'home_goal_var': event['HOME_GOAL_VAR'],
-                        'home_score_part_3': event.get('HOME_SCORE_PART_3', ''),
-                        'away_participant_name_one': event['AWAY_PARTICIPANT_NAME_ONE'],
-                        'away_event_participant_id': event['AWAY_EVENT_PARTICIPANT_ID'],
-                        'away_goal_var': event['AWAY_GOAL_VAR'],
-                        'away_score_fullL': event['AWAY_SCORE_FULL'],
-                        'away_score_part_3': event.get('AWAY_SCORE_PART_3', '')
-                    }
-                    data['away_images'] = away_img
-                    data['home_images'] = home_img
-                    serializer = HockeyLiveEventsSerializer(data=data)
-                    if serializer.is_valid():
-                        event_object, created = HockeyLiveEvents.objects.update_or_create(
+                data['away_images'] = away_img
+                data['home_images'] = home_img
+                serializer = HockeyLiveEventsSerializer(data=data)
+                if serializer.is_valid():
+                    event_object, created = HockeyLiveEvents.objects.update_or_create(
                         events_id=event['EVENT_ID'], defaults=serializer.validated_data)
-                        tournament.events.add(event_object)
-                        # event_objects = HockeyLiveEvents.objects.filter(
-                        #     events_id=event['EVENT_ID'])
-                        # if event_objects.exists():
-                        #     event_object = event_objects.first()
-                        #     serializer.update(
-                        #         event_object, serializer.validated_data)
-                        # else:
-                        #     event_object = HockeyLiveEvents.objects.create(
-                        #         **serializer.validated_data)
-                        # tournament.events.add(event_object)
-                    else:
-                        print(serializer.errors)
+                    tournament.events.add(event_object)
+                    # event_objects = HockeyLiveEvents.objects.filter(
+                    #     events_id=event['EVENT_ID'])
+                    # if event_objects.exists():
+                    #     event_object = event_objects.first()
+                    #     serializer.update(
+                    #         event_object, serializer.validated_data)
+                    # else:
+                    #     event_object = HockeyLiveEvents.objects.create(
+                    #         **serializer.validated_data)
+                    # tournament.events.add(event_object)
+                else:
+                    print(serializer.errors)
     except KeyError:
-            pass
+        pass
     return TournamentHockey.objects.all()
+
 
 @shared_task
 def send_request_endedmatch():

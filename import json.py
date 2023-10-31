@@ -8,7 +8,7 @@ headers = {
         }
 params = {
             'timezone': '-4',
-            'sport_id': '4',
+            'sport_id': '1',
             'locale': 'ru_RU'
         }
 response = requests.get(url, headers=headers, params=params)

@@ -147,4 +147,8 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'testing.task.send_request',
         'schedule': 2.0,
     },
+    'delete': {
+        'task': 'testing.delete',
+        'schedule': 60.0,
+    },
 }
