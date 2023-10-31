@@ -34,10 +34,10 @@ def upload_image(s):
 
 @shared_task
 def delete():
-    Tournament.objects.all().select_for_update().delete()
-    Events.objects.all().select_for_update().delete()
-    TournamentHockey.objects.all().select_for_update().delete()
-    HockeyLiveEvents.objects.all().select_for_update().delete()
+    Tournament.objects.all().delete()
+    Events.objects.all().delete()
+    TournamentHockey.objects.all().delete()
+    HockeyLiveEvents.objects.all().delete()
 
 
 @shared_task
