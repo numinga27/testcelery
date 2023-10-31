@@ -167,7 +167,7 @@ class TournamentViewSet(viewsets.ModelViewSet):
 
 class HockeyView(viewsets.ModelViewSet):
     '''Основной вью для хоккея'''
-    queryset = TournamentHockey.objects.all()
+    queryset = TournamentHockey.objects.filter(events__stge_type='LIVE') 
     serializer_class = TournamentHockeySerializer
 
     # def start_scheduling(self):

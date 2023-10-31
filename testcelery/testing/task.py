@@ -164,40 +164,44 @@ def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=Tru
 
 @shared_task
 def send_request_hockey(bind=True, autoretry_for=(RequestException,), retry_backoff=True):
-    # try:
-    with transaction.atomic():
-        TournamentHockey.objects.all().select_for_update().delete()
-        HockeyLiveEvents.objects.all().select_for_update().delete()
+    # # try:
+    # with transaction.atomic():
+    #     TournamentHockey.objects.all().select_for_update().delete()
+    #     HockeyLiveEvents.objects.all().select_for_update().delete()
 
-        url = "https://fs.nimbase.cc/v1/events/live-list"
-        headers = {
+    url = "https://fs.nimbase.cc/v1/events/live-list"
+    headers = {
             'api-key-bravo': 'Nc4znHJeSs06G99YMVVBovHF',
             'x-mashape-user': 'baggio093',
             'x-mashape-subscription': 'baggio093-Mega'
         }
-        params = {
+    params = {
             'timezone': '-4',
             'sport_id': '4',
             'locale': 'ru_RU'
         }
-        response = requests.get(url, headers=headers, params=params)
-        parsed_data = response.json()
-        try:
+    response = requests.get(url, headers=headers, params=params)
+    parsed_data = response.json()
+    try:
             for item in parsed_data['DATA']:
 
-                tournament = TournamentHockey.objects.filter(
-                    name=item['NAME'])
-                if tournament.exists():
-                    tournament = tournament.first()
-                else:
-                    tournament_img = upload_image(
+                # tournament = TournamentHockey.objects.filter(
+                #     name=item['NAME'])
+                # if tournament.exists():
+                #     tournament = tournament.first()
+                # else:
+                tournament_img = upload_image(
                         item['TOURNAMENT_IMAGE'])
-                    tournament = TournamentHockey.objects.create(
-                        name=item['NAME'],
-                        tournament_stage_type=item['TOURNAMENT_STAGE_TYPE'],
-                        tournament_imng=tournament_img,
-                        TOURNAMENT_TEMPLATE_ID=item['TOURNAMENT_TEMPLATE_ID']
-                    )
+                tournament_data = {
+                    'name': item['NAME'],
+                    'tournament_stage_type': item['TOURNAMENT_STAGE_TYPE'],
+                    'tournament_imng': str(tournament_img),
+                    'TOURNAMENT_TEMPLATE_ID': item['TOURNAMENT_TEMPLATE_ID']
+                }
+                tournament, created = TournamentHockey.objects.update_or_create(
+                    TOURNAMENT_TEMPLATE_ID=item['TOURNAMENT_TEMPLATE_ID'], 
+                    defaults=tournament_data
+                )
                 for event in item['EVENTS']:
                     home_img = [upload_image(
                         event.get('HOME_IMAGES'))]
@@ -242,19 +246,22 @@ def send_request_hockey(bind=True, autoretry_for=(RequestException,), retry_back
                     data['home_images'] = home_img
                     serializer = HockeyLiveEventsSerializer(data=data)
                     if serializer.is_valid():
-                        event_objects = HockeyLiveEvents.objects.filter(
-                            events_id=event['EVENT_ID'])
-                        if event_objects.exists():
-                            event_object = event_objects.first()
-                            serializer.update(
-                                event_object, serializer.validated_data)
-                        else:
-                            event_object = HockeyLiveEvents.objects.create(
-                                **serializer.validated_data)
+                        event_object, created = HockeyLiveEvents.objects.update_or_create(
+                        events_id=event['EVENT_ID'], defaults=serializer.validated_data)
                         tournament.events.add(event_object)
+                        # event_objects = HockeyLiveEvents.objects.filter(
+                        #     events_id=event['EVENT_ID'])
+                        # if event_objects.exists():
+                        #     event_object = event_objects.first()
+                        #     serializer.update(
+                        #         event_object, serializer.validated_data)
+                        # else:
+                        #     event_object = HockeyLiveEvents.objects.create(
+                        #         **serializer.validated_data)
+                        # tournament.events.add(event_object)
                     else:
                         print(serializer.errors)
-        except KeyError:
+    except KeyError:
             pass
     return TournamentHockey.objects.all()
 
