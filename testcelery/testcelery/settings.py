@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'testing',
-    'celery'
+    'celery',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -148,7 +149,8 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': 10.0,
     },
     'delete': {
-        'task': 'testing.delete',
-        'schedule': 60.0,
+        'task': 'testing.task.delete',
+        'schedule': 150.0,
     },
 }
+CACHE_MIDDLEWARE_SECONDS = 0

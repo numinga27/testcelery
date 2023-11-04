@@ -153,21 +153,19 @@ class EventDetails(APIView):
 
 class TournamentViewSet(viewsets.ModelViewSet):
     ''' Основаной вью для лайва'''
-    Tournament.objects.filter(events__stge_type='LIVE') 
+    queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
 
-
-    def list(self, request):
-        task = send_request()  
-        serializer = self.serializer_class(task, many=True)
-        return Response(serializer.data)
-
-        
+   
+    # def list(self, request):
+    #     task = send_request()
+    #     serializer = self.serializer_class(task, many=True)
+    #     return Response(serializer.data)
 
 
 class HockeyView(viewsets.ModelViewSet):
     '''Основной вью для хоккея'''
-    queryset = TournamentHockey.objects.filter(events__stge_type='LIVE') 
+    queryset = TournamentHockey.objects.filter(events__stge_type='LIVE')
     serializer_class = TournamentHockeySerializer
 
     # def start_scheduling(self):
@@ -186,10 +184,10 @@ class HockeyView(viewsets.ModelViewSet):
     #     # event_viewset = EventIdViewSet()
     #     # event_viewset.list_ev(request)
     #     return Response(serializer.data)
-    def list(self, request):
-        task = send_request_hockey()  # Add parentheses to call the function
-        serializer = self.serializer_class(task, many=True)
-        return Response(serializer.data)
+    # def list(self, request):
+    #     task = send_request_hockey()  # Add parentheses to call the function
+    #     serializer = self.serializer_class(task, many=True)
+    #     return Response(serializer.data)
 
 
 class EndedMatchView(viewsets.ModelViewSet):

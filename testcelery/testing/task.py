@@ -14,6 +14,8 @@ from .serialiazers import EventsSerializer, HockeyLiveEventsSerializer
 from django.db import transaction
 from requests.exceptions import RequestException
 from celery import shared_task
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 
 def upload_image(s):
@@ -47,11 +49,11 @@ def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=Tru
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     result = []
-    delete()
+    # delete()
     try:
 
-        # Tournament.objects.all().select_for_update().delete()
-        # Events.objects.all().select_for_update().delete()
+        Tournament.objects.all().select_for_update().delete()
+        Events.objects.all().select_for_update().delete()
         url = "https://fs.nimbase.cc/v1/events/live-list"
         headers = {
             'api-key-bravo': 'Nc4znHJeSs06G99YMVVBovHF',
@@ -177,7 +179,7 @@ def send_request_hockey(bind=True, autoretry_for=(RequestException,), retry_back
     # with transaction.atomic():
     #     TournamentHockey.objects.all().select_for_update().delete()
     #     HockeyLiveEvents.objects.all().select_for_update().delete()
-    delete()
+    
 
     url = "https://fs.nimbase.cc/v1/events/live-list"
     headers = {
@@ -273,6 +275,8 @@ def send_request_hockey(bind=True, autoretry_for=(RequestException,), retry_back
                     print(serializer.errors)
     except KeyError:
         pass
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)('tournament', {'type': 'update_tournament', 'text': "updated_data"})
     return TournamentHockey.objects.all()
 
 
