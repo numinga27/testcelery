@@ -42,7 +42,7 @@ def delete():
     HockeyLiveEvents.objects.all().delete()
 
 
-@shared_task
+# @shared_task
 def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=True):
     logging.basicConfig(filename="app.log", filemode='w',
                         format='%(name)s - %(levelname)s - %(message)s')
@@ -169,7 +169,14 @@ def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=Tru
     except Exception as e:
         # Если возникла ошибка, записываем ее в лог
         logger.error("Произошла ошибка при получении матчей: %s", e)
-
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        "live_updates",  # это имя группы, которое вы использовали в consumer'е
+        {
+            "type": "send_update",  # это имя метода в вашем consumer'е
+            "message": "Data updated"
+        }
+    )
     return Tournament.objects.all()
 
 

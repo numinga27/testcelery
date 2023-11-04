@@ -23,6 +23,8 @@ from .task import (send_request, send_request_hockey,
                    request_all_hockey, request_scheduled_hockey)
 
 import http.client
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 
 class EventIdViewSet(viewsets.ModelViewSet):
@@ -156,6 +158,20 @@ class TournamentViewSet(viewsets.ModelViewSet):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
 
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+
+        # Отправка сообщения через WebSocket после обновления
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            "live_updates",  # это имя группы, которое вы использовали в consumer'е
+            {
+                "type": "send_update",  # это имя метода в вашем consumer'е
+                "message": "Tournament updated"
+            }
+        )
+
+        return response
    
     # def list(self, request):
     #     task = send_request()
