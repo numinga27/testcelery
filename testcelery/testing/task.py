@@ -282,8 +282,8 @@ def send_request_hockey(bind=True, autoretry_for=(RequestException,), retry_back
                     print(serializer.errors)
     except KeyError:
         pass
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)('tournament', {'type': 'update_tournament', 'text': "updated_data"})
+    # channel_layer = get_channel_layer()
+    # async_to_sync(channel_layer.group_send)('tournament', {'type': 'update_tournament', 'text': "updated_data"})
     return TournamentHockey.objects.all()
 
 

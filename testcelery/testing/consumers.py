@@ -12,7 +12,7 @@ class TournamentConsumer(AsyncJsonWebsocketConsumer):
         message = text_data_json['message']
 
         # Вызов функции обновления
-        send_request()
+        async_to_sync(send_request)()
 
     async def update_tournament(self, event):
         # Отправляем обновленные данные клиенту
