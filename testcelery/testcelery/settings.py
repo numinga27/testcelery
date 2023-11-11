@@ -50,7 +50,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'channels.middleware.ChannelsMiddleware',
+    # 'channels.middleware.ChannelsMiddleware',
 ]
 
 ROOT_URLCONF = 'testcelery.urls'
@@ -72,9 +72,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'testcelery.wsgi.application'
-ASGI_APPLICATION = "testcelery.wsgi.application"
+ASGI_APPLICATION = "testcelery.routing.application"
 
-
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [('0.0.0.0', 6379)],
+        },
+    },
+}
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
