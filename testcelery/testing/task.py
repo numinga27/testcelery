@@ -42,7 +42,7 @@ def delete():
     HockeyLiveEvents.objects.all().delete()
 
 
-# @shared_task
+@shared_task
 def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=True):
     logging.basicConfig(filename="app.log", filemode='w',
                         format='%(name)s - %(levelname)s - %(message)s')
@@ -173,7 +173,7 @@ def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=Tru
     async_to_sync(channel_layer.group_send)(
         "live_updates",  # это имя группы, которое вы использовали в consumer'е
         {
-            "type": "send_update",  # это имя метода в вашем consumer'е
+            "type": "update_tournament",  # это имя метода в вашем consumer'е
             "message": "Data updated"
         }
     )
@@ -184,8 +184,8 @@ def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=Tru
 def send_request_hockey(bind=True, autoretry_for=(RequestException,), retry_backoff=True):
     # # try:
     # with transaction.atomic():
-    #     TournamentHockey.objects.all().select_for_update().delete()
-    #     HockeyLiveEvents.objects.all().select_for_update().delete()
+    TournamentHockey.objects.all().select_for_update().delete()
+    HockeyLiveEvents.objects.all().select_for_update().delete()
     
 
     url = "https://fs.nimbase.cc/v1/events/live-list"

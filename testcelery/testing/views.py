@@ -166,7 +166,7 @@ class TournamentViewSet(viewsets.ModelViewSet):
         async_to_sync(channel_layer.group_send)(
             "live_updates",  # это имя группы, которое вы использовали в consumer'е
             {
-                "type": "send_update",  # это имя метода в вашем consumer'е
+                "type": "update_tournament",  # это имя метода в вашем consumer'е
                 "message": "Tournament updated"
             }
         )
