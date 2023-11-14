@@ -174,10 +174,10 @@ def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=Tru
         "live_updates",  # это имя группы, которое вы использовали в consumer'е
         {
             "type": "update_tournament",  # это имя метода в вашем consumer'е
-            "message": "Data updated"
+            "message": Tournament.objects.all()
         }
     )
-    return Tournament.objects.all()
+    # return Tournament.objects.all()
 
 
 @shared_task

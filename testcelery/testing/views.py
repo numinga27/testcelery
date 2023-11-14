@@ -154,24 +154,17 @@ class EventDetails(APIView):
 
 
 class TournamentViewSet(viewsets.ModelViewSet):
-    ''' Основаной вью для лайва'''
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
 
-    def update(self, request, *args, **kwargs):
-        response = super().update(request, *args, **kwargs)
+    # def update(self, request, *args, **kwargs):
+    #     response = super().update(request, *args, **kwargs)
 
-        # Отправка сообщения через WebSocket после обновления
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            "live_updates",  # это имя группы, которое вы использовали в consumer'е
-            {
-                "type": "update_tournament",  # это имя метода в вашем consumer'е
-                "message": "Tournament updated"
-            }
-        )
+    #     # Notify all connected clients about the update
+    #     tournament = self.get_object()
+    #     # update_tournament(tournament)
 
-        return response
+    #     return response
    
     # def list(self, request):
     #     task = send_request()
