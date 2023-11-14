@@ -156,21 +156,18 @@ class EventDetails(APIView):
 class TournamentViewSet(viewsets.ModelViewSet):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
-
-    # def update(self, request, *args, **kwargs):
-    #     response = super().update(request, *args, **kwargs)
-
-    #     # Notify all connected clients about the update
-    #     tournament = self.get_object()
-    #     # update_tournament(tournament)
-
-    #     return response
-   
-    # def list(self, request):
-    #     task = send_request()
-    #     serializer = self.serializer_class(task, many=True)
-    #     return Response(serializer.data)
-
+    
+    def get(self, request):
+        
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+        "tournament_updates",  # это имя группы, которое вы использовали в consumer'е
+        {
+            "type": "receive",  # это имя метода в вашем consumer'е
+            "message": Tournament.objects.all()
+        }
+    )
+        return Response
 
 class HockeyView(viewsets.ModelViewSet):
     '''Основной вью для хоккея'''
@@ -193,10 +190,10 @@ class HockeyView(viewsets.ModelViewSet):
     #     # event_viewset = EventIdViewSet()
     #     # event_viewset.list_ev(request)
     #     return Response(serializer.data)
-    # def list(self, request):
-    #     task = send_request_hockey()  # Add parentheses to call the function
-    #     serializer = self.serializer_class(task, many=True)
-    #     return Response(serializer.data)
+    def list(self, request):
+        task = send_request_hockey()  # Add parentheses to call the function
+        serializer = self.serializer_class(task, many=True)
+        return Response(serializer.data)
 
 
 class EndedMatchView(viewsets.ModelViewSet):

@@ -34,12 +34,12 @@ def upload_image(s):
         print(f"Ошибка {response.status_code}: {response.text}")
 
 
-@shared_task
-def delete():
-    Tournament.objects.all().delete()
-    Events.objects.all().delete()
-    TournamentHockey.objects.all().delete()
-    HockeyLiveEvents.objects.all().delete()
+# @shared_task
+# def delete():
+#     Tournament.objects.all().delete()
+#     Events.objects.all().delete()
+#     TournamentHockey.objects.all().delete()
+#     HockeyLiveEvents.objects.all().delete()
 
 
 @shared_task
@@ -171,13 +171,13 @@ def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=Tru
         logger.error("Произошла ошибка при получении матчей: %s", e)
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
-        "live_updates",  # это имя группы, которое вы использовали в consumer'е
+        "tournament_updates",  # это имя группы, которое вы использовали в consumer'е
         {
-            "type": "update_tournament",  # это имя метода в вашем consumer'е
+            "type": "receive",  # это имя метода в вашем consumer'е
             "message": Tournament.objects.all()
         }
     )
-    # return Tournament.objects.all()
+    return Tournament.objects.all()
 
 
 @shared_task
