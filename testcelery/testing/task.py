@@ -18,6 +18,17 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
 
+def send_to_channel_layer(tournament_updates, message):
+    channel_layer = get_channel_layer()
+
+    async_to_sync(channel_layer.group_send)(
+       tournament_updates,  # это имя группы, которое вы использовали в consumer'е
+        {
+            "type": "update_tournament",  # это имя метода в вашем consumer'е
+            "message": message
+        }
+    )
+
 def upload_image(s):
     url = 'https://static.stat.bet/api/upload'
     data = {
@@ -34,16 +45,7 @@ def upload_image(s):
         print(f"Ошибка {response.status_code}: {response.text}")
 
 
-# @shared_task
-# def delete():
-#     Tournament.objects.all().delete()
-#     Events.objects.all().delete()
-#     TournamentHockey.objects.all().delete()
-#     HockeyLiveEvents.objects.all().delete()
-
-
-@shared_task
-def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=True):
+def send_request():
     logging.basicConfig(filename="app.log", filemode='w',
                         format='%(name)s - %(levelname)s - %(message)s')
     logger = logging.getLogger()
@@ -136,49 +138,19 @@ def send_request(bind=True, autoretry_for=(RequestException,), retry_backoff=Tru
                         print(serializer.errors)
         except KeyError:
             pass
-        # event_ids = Events.objects.values_list('event_id', flat=True)
-        # for event_idss in event_ids:
-        #     EventId.objects.update_or_create(live_event_id=event_idss)
-        # conn = http.client.HTTPSConnection(
-        #     "fs.nimbase.cc")
-
-        # headers = {
-        #     'api-key-bravo': 'Nc4znHJeSs06G99YMVVBovHF',
-        #     'x-mashape-user': 'baggio093',
-        #     'x-mashape-subscription': 'baggio093-Mega'
-        # }
-
-        # for event_idss in event_ids:
-        #     try:
-        #         conn.request(
-        #             "GET", f"/v1/events/statistics?event_id={event_idss}&locale=ru_RU", headers=headers)
-        #         res = conn.getresponse()
-        #         data = res.read()
-        #         json_data = json.loads(data)
-        #         for item in json_data['DATA'][0]['GROUPS'][0]['ITEMS']:
-        #             if item["INCIDENT_NAME"] == "Yellow Cards":
-        #                 yellow_cards_home = item['VALUE_HOME']
-        #                 yellow_cards_away = item['VALUE_AWAY']
-        #                 break
-        #         event = Events.objects.get(event_id=event_idss)
-        #         event.yellow_cards_home = yellow_cards_home
-        #         event.yellow_cards_away = yellow_cards_away
-        #         event.save()
-        #     except Exception:
-        #         pass
     except Exception as e:
         # Если возникла ошибка, записываем ее в лог
         logger.error("Произошла ошибка при получении матчей: %s", e)
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
-        "tournament_updates",  # это имя группы, которое вы использовали в consumer'е
-        {
-            "type": "receive",  # это имя метода в вашем consumer'е
-            "message": Tournament.objects.all()
-        }
-    )
+  
     return Tournament.objects.all()
 
+@shared_task
+def send_request_task():
+    # Ваш синхронный код выполняется здесь...
+    tournaments = send_request()
+
+    # Отправка сообщения в канал после завершения задачи
+    send_to_channel_layer("live_updates", tournaments)
 
 @shared_task
 def send_request_hockey(bind=True, autoretry_for=(RequestException,), retry_backoff=True):

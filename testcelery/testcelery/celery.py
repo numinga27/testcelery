@@ -1,14 +1,14 @@
-from __future__ import absolute_import, unicode_literals
-import os
 from celery import Celery
+from celery.schedules import crontab
 
-# Установите значение по умолчанию для переменной окружения DJANGO_SETTINGS_MODULE
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'testcelery.settings')
+# app = Celery('testcelery')
+app = Celery('testcelery', broker='redis://localhost:6379/0')
+app.conf.beat_schedule = {
+    'send-request-every-minute': {
+        'task': 'path.to.send_request_task',  # замените на путь к вашей задаче
+        'schedule': crontab(minute='*'),  # Каждую минуту
+    },
+    # Другие периодические задачи здесь…
+}
 
-app = Celery('testcelery')
 
-# Используйте строку подключения для брокера из настроек Django
-app.config_from_object('django.conf:settings', namespace='CELERY')
-
-# Загрузите модули задач из всех зарегистрированных приложений Django
-app.autodiscover_tasks()

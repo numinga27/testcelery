@@ -1,8 +1,15 @@
-# import os
-# from celery import Celery
+# В файле celery.py или в конфигурационном файле для Celery
 
-# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'testcelery.settings')
+from celery import Celery
+from celery.schedules import crontab
 
-# app = Celery('testing')
-# app.config_from_object('django.conf:settings', namespace='CELERY')
-# app.autodiscover_tasks()
+app = Celery('testcelery')
+
+app.conf.beat_schedule = {
+    'send-request-every-minute': {
+        'task': 'path.to.send_request_task',  # замените на путь к вашей задаче
+        'schedule': crontab(minute='*'),  # Каждую минуту
+    },
+    # Другие периодические задачи здесь…
+}
+
