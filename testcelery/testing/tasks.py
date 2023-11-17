@@ -2,6 +2,7 @@ import requests
 import ast
 import http
 import json
+from django.core.serializers import serialize
 import logging
 import datetime
 from datetime import timedelta
@@ -146,11 +147,9 @@ def send_request():
 
 @shared_task
 def send_request_task():
-    # Ваш синхронный код выполняется здесь...
     tournaments = send_request()
-
-    # Отправка сообщения в канал после завершения задачи
-    send_to_channel_layer("live_updates", tournaments)
+    serialized_tournaments = serialize('json', tournaments)
+    send_to_channel_layer("tournament_updates", serialized_tournaments)
 
 @shared_task
 def send_request_hockey(bind=True, autoretry_for=(RequestException,), retry_backoff=True):

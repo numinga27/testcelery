@@ -12,24 +12,22 @@ def serialize_tournaments():
     return serialize('json', Tournament.objects.all())
 
 class TournamentConsumer(AsyncJsonWebsocketConsumer):
-    groups = ["tournament_updates"]
-
-    # ... Ваш код connect и disconnect ...
-
-    # В методе receive не вызывайте send_request напрямую, т.к это синхронный метод.
-    async def receive(self, text_data):
-        # Получите уже сериализованные данные для отправки
-        serialized_tournaments = await serialize_tournaments()
-
-        # Send message to room group
-        await self.channel_layer.group_send(
+    async def connect(self):
+        await self.channel_layer.group_add(
             "tournament_updates",
-            {
-                'type': 'update_tournament',
-                'message': serialized_tournaments,
-            }
+            self.channel_name
+        )
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        await self.channel_layer.group_discard(
+            "tournament_updates",
+            self.channel_name
         )
 
-async def update_tournament(self, event):
-    # Get the message from the event and send it out to the WebSocket
-    message = event['message']
+    async def receive(self, text_data=None, bytes_data=None):
+        serialized_tournaments = await serialize_tournaments()
+        await self.send_json(serialized_tournaments)
+
+    async def update_tournament(self, event):
+        await self.send_json(event['message'])
