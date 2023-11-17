@@ -6,7 +6,7 @@ import logging
 import datetime
 from datetime import timedelta
 
-
+from testcelery.celery import app
 from .models import (Events, Tournament, HockeyLiveEvents,
                      TournamentHockey, EndedMatch, Scheduled, All, AllHockey,
                      ScheduledHockey, EndedHockey, EventId)
