@@ -11,9 +11,42 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+import logging
+import os
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+# LOG_DIR = os.path.join(BASE_DIR, 'logs')
+# # Создаем директорию, если она не существует
+# if not os.path.exists(LOG_DIR):
+#     os.makedirs(LOG_DIR)
+
+# # Настройки логирования
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'formatters': {  # Форматирование сообщений
+#         'verbose': {
+#             'format': '{levelname} {asctime} {module} {message}',
+#             'style': '{',
+#         },
+#     },
+#     'handlers': {  # Обработчики
+#         'file': {
+#             'class': 'logging.FileHandler',
+#             'filename': os.path.join(LOG_DIR, 'celer.log'),  # Путь к файлу логов Celery
+#             'formatter': 'verbose',
+#         },
+#     },
+#     'loggers': {
+#         'celery': {  # Настройки логгера для Celery
+#             'handlers': ['file'],
+#             'level': 'INFO',
+#             'propagate': False,
+#         },
+#     },
+# }
 
 
 # Quick-start development settings - unsuitable for production

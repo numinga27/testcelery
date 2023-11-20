@@ -17,6 +17,9 @@ from requests.exceptions import RequestException
 from celery import shared_task
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from celery.utils.log import get_task_logger
+
+LOG_FILE_PATH = 'your_log_file.log'
 
 
 def send_to_channel_layer(tournament_updates, message):
@@ -55,8 +58,8 @@ def send_request():
     # delete()
     try:
 
-        Tournament.objects.all().select_for_update().delete()
-        Events.objects.all().select_for_update().delete()
+        Tournament.objects.all().delete()
+        Events.objects.all().delete()
         url = "https://fs.nimbase.cc/v1/events/live-list"
         headers = {
             'api-key-bravo': 'Nc4znHJeSs06G99YMVVBovHF',
@@ -147,9 +150,22 @@ def send_request():
 
 @shared_task
 def send_request_task():
-    tournaments = send_request()
-    serialized_tournaments = serialize('json', tournaments)
-    send_to_channel_layer("tournament_updates", serialized_tournaments)
+    try:
+        tournaments = send_request()
+        # print(tournaments)
+        serialized_tournaments = serialize('json', tournaments)
+        # logger.info("Starting send_request_task")
+        with open(LOG_FILE_PATH, 'a') as log_file:
+            log_file.write('Starting send_request_task\n')
+            log_file.write(serialized_tournaments + '\n')
+            log_file.write('Finished send_request_task\n')
+
+        send_to_channel_layer("tournament_updates", serialized_tournaments)  # функция для отправки данных в канал
+
+    except Exception as e:
+        # Запишем ошибку в файл лога, файл будет создан если не существует
+        with open(LOG_FILE_PATH, 'a') as log_file:
+            log_file.write('Error in send_request_task: {}\n'.format(str(e)))
 
 @shared_task
 def send_request_hockey(bind=True, autoretry_for=(RequestException,), retry_backoff=True):

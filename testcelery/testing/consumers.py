@@ -13,11 +13,19 @@ def serialize_tournaments():
 
 class TournamentConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
+        # Присоединение к группе WebSocket
         await self.channel_layer.group_add(
             "tournament_updates",
             self.channel_name
         )
+        # Принять WebSocket соединение
         await self.accept()
+        # Получить и отправить текущие данные о турнирах клиенту
+        serialized_tournaments = await serialize_tournaments()
+        await self.send_json({
+            "type": "initial_data",
+            "message": serialized_tournaments
+        })
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(
