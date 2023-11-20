@@ -33,6 +33,8 @@ def send_to_channel_layer(tournament_updates, message):
         }
     )
 
+    
+
 def upload_image(s):
     url = 'https://static.stat.bet/api/upload'
     data = {

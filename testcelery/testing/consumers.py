@@ -34,8 +34,10 @@ class TournamentConsumer(AsyncJsonWebsocketConsumer):
         )
 
     async def receive(self, text_data=None, bytes_data=None):
-        serialized_tournaments = await serialize_tournaments()
-        await self.send_json(serialized_tournaments)
+        # Обработка сообщения от клиента (если требуется)
+        pass  # Обычно здесь что-то делаем, например, обрабатываем команды от клиента
 
     async def update_tournament(self, event):
+        # Этот хэндлер вызывается, когда Celery задача отправляет сообщение в канал "tournament_updates"
         await self.send_json(event['message'])
+
