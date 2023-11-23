@@ -18,7 +18,7 @@ from .serialiazers import (EventsSerializer, EventLiveIdSerializer,
                            TournamentSerializer, TournamentHockeySerializer, EndedMatchSerializer,
                            ScheduledSerializer, AllSerializer, AllHockeySerializer,
                            ScheduledHockeySerializer, EndedHockeySerializer)
-from .tasks import (send_request, send_request_hockey,
+from .tasks import (send_request_task, send_request_hockey,
                    send_request_endedmatch, send_request_scheluded, request_all,
                    request_all_hockey, request_scheduled_hockey)
 
@@ -156,18 +156,10 @@ class EventDetails(APIView):
 class TournamentViewSet(viewsets.ModelViewSet):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
-    
-    def get(self, request):
-        
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-        "tournament_updates",  # это имя группы, которое вы использовали в consumer'е
-        {
-            "type": "receive",  # это имя метода в вашем consumer'е
-            "message": Tournament.objects.all()
-        }
-    )
-        return Response
+
+    def perform_create(self, serializer):
+        serializer.save()  # Сохраняем объект
+        send_request_task.delay()  # Асинхронно запускаем задачу отправки данных
 
 class HockeyView(viewsets.ModelViewSet):
     '''Основной вью для хоккея'''
