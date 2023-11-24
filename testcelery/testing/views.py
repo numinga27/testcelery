@@ -157,9 +157,14 @@ class TournamentViewSet(viewsets.ModelViewSet):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
 
-    def perform_create(self, serializer):
-        serializer.save()  # Сохраняем объект
-        send_request_task.delay()  # Асинхронно запускаем задачу отправки данных
+    # def list(self, request):
+    #     task = send_request_task.delay()
+    #     serializer = self.serializer_class(task, many=True)
+    #     return Response(serializer.data)
+
+    # def perform_create(self, serializer):
+    #     serializer.save()  # Сохраняем объект
+    #     send_request_task.delay()  # Асинхронно запускаем задачу отправки данных
 
 class HockeyView(viewsets.ModelViewSet):
     '''Основной вью для хоккея'''
