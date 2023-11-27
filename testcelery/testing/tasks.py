@@ -26,14 +26,13 @@ def send_to_channel_layer(tournament_updates, message):
     channel_layer = get_channel_layer()
 
     async_to_sync(channel_layer.group_send)(
-       tournament_updates,  # это имя группы, которое вы использовали в consumer'е
+        tournament_updates,  # это имя группы, которое вы использовали в consumer'е
         {
             "type": "update_tournament",  # это имя метода в вашем consumer'е
             "message": message
         }
     )
 
-    
 
 def upload_image(s):
     url = 'https://static.stat.bet/api/upload'
@@ -51,123 +50,128 @@ def upload_image(s):
         print(f"Ошибка {response.status_code}: {response.text}")
 
 
+@shared_task
 def send_request():
     logging.basicConfig(filename="app.log", filemode='w',
                         format='%(name)s - %(levelname)s - %(message)s')
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     result = []
-    # delete()
     try:
+        with transaction.atomic():
 
-        Tournament.objects.all().delete()
-        Events.objects.all().delete()
-        url = "https://fs.nimbase.cc/v1/events/live-list"
-        headers = {
-            'api-key-bravo': 'Nc4znHJeSs06G99YMVVBovHF',
-            'x-mashape-user': 'baggio093',
-            'x-mashape-subscription': 'baggio093-Mega'
-        }
-        params = {
-            'timezone': '-4',
-            'sport_id': '1',
-            'locale': 'ru_RU'
-        }
-        response = requests.get(url, headers=headers, params=params)
-        parsed_data = response.json()
-        # print(parsed_data)
-        try:
-            for item in parsed_data['DATA']:
-                # tournaments = Tournament.objects.filter(name=item['NAME'])
-                # # if tournaments.exists():
-                # #     tournament = tournaments.first()
-                # # else:
-                tournament_imng = upload_image(
-                    item['TOURNAMENT_IMAGE'])
-                # print(tournament_imng)
-                tournament_data = {
-                    'name': item['NAME'],
-                    'tournament_stage_type': item['TOURNAMENT_STAGE_TYPE'],
-                    'tournament_imng': str(tournament_imng),
-                    'TOURNAMENT_TEMPLATE_ID': item['TOURNAMENT_TEMPLATE_ID']
-                }
-                tournament, created = Tournament.objects.update_or_create(
-                    TOURNAMENT_TEMPLATE_ID=item['TOURNAMENT_TEMPLATE_ID'],
-                    defaults=tournament_data
-                )
-                for event in item['EVENTS']:
-                    home_img = [upload_image(
-                        event.get('HOME_IMAGES'))]
-                    away_img = [upload_image(event.get('AWAY_IMAGES'))]
-                    # print(home_img, away_img)
-                    stage_start_time = datetime.datetime.fromtimestamp(
-                        event['STAGE_START_TIME'])
-                    current_time = datetime.datetime.now() - stage_start_time
-                    data = {
-                        'event_id': event['EVENT_ID'],
-                        'start_time': event['START_TIME'],
-                        'start_utime': event['START_UTIME'],
-                        'game_time': event['GAME_TIME'],
-                        'short_name_away': event['SHORTNAME_AWAY'],
-                        'away_name': event['AWAY_NAME'],
-                        'away_score_current': event['AWAY_SCORE_CURRENT'],
-                        'away_score_part_1': event['AWAY_SCORE_PART_1'],
-                        'away_score_part_2': event.get('AWAY_SCORE_PART_2', ''),
-                        'short_name_home': event['SHORTNAME_HOME'],
-                        'home_name': event['HOME_NAME'],
-                        'home_score_current': event['HOME_SCORE_CURRENT'],
-                        'home_score_part_1': event['HOME_SCORE_PART_1'],
-                        'home_score_part_2': event.get('HOME_SCORE_PART_2', ''),
-                        'home_images': event.get('HOME_IMAGES'),
-                        'away_images': event.get('AWAY_IMAGES'),
-                        'stge_type': event['STAGE_TYPE'],
-                        'merge_stage_tupe': event['MERGE_STAGE_TYPE'],
-                        'stage': event['STAGE'],
-                        'sort': event['SORT'],
-                        'live_mark': event['LIVE_MARK'],
-                        'red_cards_home': event.get('HOME_RED_CARDS', 0),
-                        'red_cards_away': event.get('AWAY_RED_CARDS', 0),
-                        'stage_start_time': event['STAGE_START_TIME'],
-                        'current_time': str(current_time)
-                    }
-                    if event['STAGE'] == "SECOND_HALF":
-                        current_time += timedelta(minutes=45)
-                        data['current_time'] = str(current_time)
-                    data['away_images'] = away_img
-                    data['home_images'] = home_img
-                    serializer = EventsSerializer(data=data)
-                    if serializer.is_valid():
-                        event_object, created = Events.objects.update_or_create(
-                            event_id=event['EVENT_ID'], defaults=serializer.validated_data)
-                        tournament.events.add(event_object)
+            Tournament.objects.all().select_for_update().delete()
+            Events.objects.all().select_for_update().delete()
+            url = "https://fs.nimbase.cc/v1/events/live-list"
+            headers = {
+                'api-key-bravo': 'Nc4znHJeSs06G99YMVVBovHF',
+                'x-mashape-user': 'baggio093',
+                'x-mashape-subscription': 'baggio093-Mega'
+            }
+            params = {
+                'timezone': '-4',
+                'sport_id': '1',
+                'locale': 'ru_RU'
+            }
+            response = requests.get(url, headers=headers, params=params)
+            parsed_data = response.json()
+            # print(parsed_data)
+            try:
+                for item in parsed_data['DATA']:
+                    tournaments = Tournament.objects.filter(name=item['NAME'])
+                    if tournaments.exists():
+                        tournament = tournaments.first()
                     else:
-                        print(serializer.errors)
-        except KeyError:
-            pass
+                        tournament = Tournament.objects.create(
+                            name=item['NAME'],
+                            tournament_stage_type=item['TOURNAMENT_STAGE_TYPE'],
+                             tournament_imng = upload_image(
+                    item['TOURNAMENT_IMAGE']),
+                            TOURNAMENT_TEMPLATE_ID=item['TOURNAMENT_TEMPLATE_ID']
+                        )
+                    for event in item['EVENTS']:
+                        home_img = [upload_image(
+                        event.get('HOME_IMAGES'))]
+                        away_img = [upload_image(event.get('AWAY_IMAGES'))]
+                        stage_start_time = datetime.datetime.fromtimestamp(
+                            event['STAGE_START_TIME'])
+                        current_time = datetime.datetime.now() - stage_start_time
+                        data = {
+                            'event_id': event['EVENT_ID'],
+                            'start_time': event['START_TIME'],
+                            'start_utime': event['START_UTIME'],
+                            'game_time': event['GAME_TIME'],
+                            'short_name_away': event['SHORTNAME_AWAY'],
+                            'away_name': event['AWAY_NAME'],
+                            'away_score_current': event['AWAY_SCORE_CURRENT'],
+                            'away_score_part_1': event['AWAY_SCORE_PART_1'],
+                            'away_score_part_2': event.get('AWAY_SCORE_PART_2', ''),
+                            'short_name_home': event['SHORTNAME_HOME'],
+                            'home_name': event['HOME_NAME'],
+                            'home_score_current': event['HOME_SCORE_CURRENT'],
+                            'home_score_part_1': event['HOME_SCORE_PART_1'],
+                            'home_score_part_2': event.get('HOME_SCORE_PART_2', ''),
+                            'home_images': event.get('HOME_IMAGES'),
+                            'away_images': event.get('AWAY_IMAGES'),
+                            'stge_type': event['STAGE_TYPE'],
+                            'merge_stage_tupe': event['MERGE_STAGE_TYPE'],
+                            'stage': event['STAGE'],
+                            'sort': event['SORT'],
+                            'live_mark': event['LIVE_MARK'],
+                            'red_cards_home': event.get('HOME_RED_CARDS', 0),
+                            'red_cards_away': event.get('AWAY_RED_CARDS', 0),
+                            'stage_start_time': event['STAGE_START_TIME'],
+                            'current_time': str(current_time)
+                        }
+                        if event['STAGE'] == "SECOND_HALF":
+                            current_time += timedelta(minutes=45)
+                            data['current_time'] = str(current_time)
+                        data['away_images'] = away_img
+                        data['home_images'] = home_img    
+                        serializer = EventsSerializer(data=data)
+                        if serializer.is_valid():
+                            event_objects = Events.objects.filter(
+                                event_id=event['EVENT_ID'])
+                            if event_objects.exists():
+                                event_object = event_objects.first()
+                                result.append(serializer.data)
+                                serializer.update(
+                                    event_object, serializer.validated_data)
+                            else:
+                                event_object = Events.objects.create(
+                                    **serializer.validated_data)
+                            tournament.events.add(event_object)
+                        else:
+                            print(serializer.errors)
+            except Exception as e:
+                # Если возникла ошибка, записываем ее в лог
+                logger.error("Произошла ошибка при получении матчей: %s", e)
     except Exception as e:
         # Если возникла ошибка, записываем ее в лог
         logger.error("Произошла ошибка при получении матчей: %s", e)
-  
+    serialized_tournaments = serialize('json', Tournament.objects.all())
+    send_to_channel_layer("tournament_updates", serialized_tournaments)
     return Tournament.objects.all()
 
-@shared_task
-def send_request_task():
-    try:
-        tournaments = send_request()
-        # print(tournaments)
-        serialized_tournaments = serialize('json', tournaments)
-        # logger.info("Starting send_request_task")
-        with open(LOG_FILE_PATH, 'a') as log_file:
-            log_file.write('Starting send_request_task\n')
-            log_file.write(serialized_tournaments + '\n')
-            log_file.write('Finished send_request_task\n')
+# @shared_task
+# def send_request_task():
+#     try:
+#         tournaments = send_request()
+#         # print(tournaments)
+#         serialized_tournaments = serialize('json', tournaments)
+#         # logger.info("Starting send_request_task")
+#         with open(LOG_FILE_PATH, 'a') as log_file:
+#             log_file.write('Starting send_request_task\n')
+#             log_file.write(serialized_tournaments + '\n')
+#             log_file.write('Finished send_request_task\n')
 
-        send_to_channel_layer("tournament_updates", serialized_tournaments)  # функция для отправки данных в канал
+#         send_to_channel_layer("tournament_updates", serialized_tournaments)  # функция для отправки данных в канал
 
-    except Exception as e:
-        # Запишем ошибку в файл лога, файл будет создан если не существует
-        with open(LOG_FILE_PATH, 'a') as log_file:
-            log_file.write('Error in send_request_task: {}\n'.format(str(e)))
+#     except Exception as e:
+#         # Запишем ошибку в файл лога, файл будет создан если не существует
+#         with open(LOG_FILE_PATH, 'a') as log_file:
+#             log_file.write('Error in send_request_task: {}\n'.format(str(e)))
+
 
 @shared_task
 def send_request_hockey(bind=True, autoretry_for=(RequestException,), retry_backoff=True):
@@ -175,7 +179,6 @@ def send_request_hockey(bind=True, autoretry_for=(RequestException,), retry_back
     # with transaction.atomic():
     TournamentHockey.objects.all().select_for_update().delete()
     HockeyLiveEvents.objects.all().select_for_update().delete()
-    
 
     url = "https://fs.nimbase.cc/v1/events/live-list"
     headers = {

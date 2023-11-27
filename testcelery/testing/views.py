@@ -18,7 +18,7 @@ from .serialiazers import (EventsSerializer, EventLiveIdSerializer,
                            TournamentSerializer, TournamentHockeySerializer, EndedMatchSerializer,
                            ScheduledSerializer, AllSerializer, AllHockeySerializer,
                            ScheduledHockeySerializer, EndedHockeySerializer)
-from .tasks import (send_request_task, send_request_hockey,
+from .tasks import (send_request, send_request_hockey,
                    send_request_endedmatch, send_request_scheluded, request_all,
                    request_all_hockey, request_scheduled_hockey)
 
@@ -157,10 +157,10 @@ class TournamentViewSet(viewsets.ModelViewSet):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
 
-    # def list(self, request):
-    #     task = send_request_task.delay()
-    #     serializer = self.serializer_class(task, many=True)
-    #     return Response(serializer.data)
+    def list(self, request):
+        task = send_request()
+        serializer = self.serializer_class(task, many=True)
+        return Response(serializer.data)
 
     # def perform_create(self, serializer):
     #     serializer.save()  # Сохраняем объект

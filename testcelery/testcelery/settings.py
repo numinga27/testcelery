@@ -182,8 +182,12 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Europe/Moscow'
 CELERY_BEAT_SCHEDULE = {
-    'parse-every-30-seconds': {
-        'task': 'testing.tasks.send_request_task',
+    # 'parse-every-30-seconds': {
+    #     'task': 'testing.tasks.send_request_task',
+    #     'schedule': 10.0,
+    # },
+     'parseseconds': {
+        'task': 'testing.tasks.send_request',
         'schedule': 10.0,
     },
 }
