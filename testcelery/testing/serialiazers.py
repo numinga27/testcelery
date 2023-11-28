@@ -1,5 +1,5 @@
 from datetime import datetime
-
+from django.utils import timezone
 from rest_framework import serializers
 from .models import (Events, LiveOfEvents, EventId,
                      Tournament, HockeyLiveEvents, TournamentHockey,
@@ -13,6 +13,13 @@ class EventsSerializer(serializers.ModelSerializer):
     start_utime = serializers.IntegerField()
     home_score_part_2 = serializers.CharField(allow_blank=True, required=False)
     away_score_part_2 = serializers.CharField(allow_blank=True, required=False)
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.updated_at = timezone.now()  # Явное обновление updated_at
+        instance.save()
+        return instance
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -48,6 +55,12 @@ class EventLiveIdSerializer(serializers.ModelSerializer):
 
 class TournamentSerializer(serializers.ModelSerializer):
     events = EventsSerializer(many=True)
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.updated_at = timezone.now()  # Явное обновление updated_at
+        instance.save()
+        return instance
 
     class Meta:
         model = Tournament
