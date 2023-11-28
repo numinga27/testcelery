@@ -5,6 +5,8 @@ import time
 import schedule
 import threading
 import json
+from datetime import timedelta
+from django.utils import timezone
 
 from django.db import transaction
 from rest_framework import viewsets
@@ -158,8 +160,12 @@ class TournamentViewSet(viewsets.ModelViewSet):
     serializer_class = TournamentSerializer
 
     def list(self, request):
-        task = send_request()
-        serializer = self.serializer_class(task, many=True)
+        # Для списка определяем свой queryset в зависимости от времени обновления
+        # Предполагаем, что турниры обновляются каждые X минут
+        recent_time = timezone.now() - timedelta(minutes=3)
+        queryset = Tournament.objects.filter(updated_at__gte=recent_time)
+
+        serializer = self.serializer_class(queryset, many=True)
         return Response(serializer.data)
 
     # def perform_create(self, serializer):
