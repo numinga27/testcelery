@@ -1,13 +1,11 @@
 import ast
 import requests
-url = "https://fs.nimbase.cc/v1/events/list"
-querystring = {"timezone": "-4", "indent_days": "-1",
-                           "locale": "ru_RU", "sport_id": "1"}
+url = "https://flashlive-sports-api.hgapi.top/v1/events/live-list?locale=en_INT&sport_id=1&timezone=-4"
 headers = {
-                'api-key-bravo': 'Nc4znHJeSs06G99YMVVBovHF',
-                'x-mashape-user': 'baggio093',
-                'x-mashape-subscription': 'baggio093-Mega'
-            }
-response = requests.get(url, headers=headers, params=querystring)
-parsed_data = response.json()
+  'accept': 'application/json' ,
+  'x-portal-apikey': 'CJZtUTmTlzmYL2LOAXfMEdwpTTyskrM5hQhT4lT1DJqUz'
+}
+
+response = requests.get(url, headers=headers)
+parsed_data = response.json() 
 print(parsed_data)

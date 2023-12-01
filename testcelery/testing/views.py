@@ -160,9 +160,8 @@ class TournamentViewSet(viewsets.ModelViewSet):
     serializer_class = TournamentSerializer
 
     def list(self, request):
-        # Для списка определяем свой queryset в зависимости от времени обновления
-        # Предполагаем, что турниры обновляются каждые X минут
-        recent_time = timezone.now() - timedelta(minutes=3)
+        send_request()
+        recent_time = timezone.now() - timedelta(minutes=70)
         queryset = Tournament.objects.filter(updated_at__gte=recent_time)
 
         serializer = self.serializer_class(queryset, many=True)

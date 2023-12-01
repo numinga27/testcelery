@@ -1,11 +1,11 @@
 import requests
 import ast
 import http
-import json
+from datetime import timedelta
 from django.core.serializers import serialize
 import logging
 import datetime
-from datetime import timedelta
+from django.utils import timezone
 
 from testcelery.celery import app
 from .models import (Events, Tournament, HockeyLiveEvents,
@@ -62,37 +62,34 @@ def send_request():
 
             # Tournament.objects.all().select_for_update().delete()
             # Events.objects.all().select_for_update().delete()
-            url = "https://fs.nimbase.cc/v1/events/live-list"
+
+            url = "https://flashlive-sports-api.hgapi.top/v1/events/live-list?locale=en_INT&sport_id=1&timezone=-4"
             headers = {
-                'api-key-bravo': 'Nc4znHJeSs06G99YMVVBovHF',
-                'x-mashape-user': 'baggio093',
-                'x-mashape-subscription': 'baggio093-Mega'
+            'accept': 'application/json' ,
+            'x-portal-apikey': 'CJZtUTmTlzmYL2LOAXfMEdwpTTyskrM5hQhT4lT1DJqUz'
             }
-            params = {
-                'timezone': '-4',
-                'sport_id': '1',
-                'locale': 'ru_RU'
-            }
-            response = requests.get(url, headers=headers, params=params)
-            parsed_data = response.json()
+
+            response = requests.get(url, headers=headers)
+            parsed_data = response.json() 
             # print(parsed_data)
             try:
                 for item in parsed_data['DATA']:
                     tournaments = Tournament.objects.filter(name=item['NAME'])
                     if tournaments.exists():
                         tournament = tournaments.first()
+                        tournament.updated_at = timezone.now()
                     else:
                         tournament = Tournament.objects.create(
                             name=item['NAME'],
                             tournament_stage_type=item['TOURNAMENT_STAGE_TYPE'],
-                             tournament_imng = upload_image(
-                    item['TOURNAMENT_IMAGE']),
-                            TOURNAMENT_TEMPLATE_ID=item['TOURNAMENT_TEMPLATE_ID']
+                             tournament_imng =  item['TOURNAMENT_IMAGE'],
+                            TOURNAMENT_TEMPLATE_ID=item['TOURNAMENT_TEMPLATE_ID'],
+                            updated_at=timezone.now()
                         )
                     for event in item['EVENTS']:
-                        home_img = [upload_image(
-                        event.get('HOME_IMAGES'))]
-                        away_img = [upload_image(event.get('AWAY_IMAGES'))]
+                        # home_img = [upload_image(
+                        # event.get('HOME_IMAGES'))]
+                        # away_img = [upload_image(event.get('AWAY_IMAGES'))]
                         stage_start_time = datetime.datetime.fromtimestamp(
                             event['STAGE_START_TIME'])
                         current_time = datetime.datetime.now() - stage_start_time
@@ -126,20 +123,22 @@ def send_request():
                         if event['STAGE'] == "SECOND_HALF":
                             current_time += timedelta(minutes=45)
                             data['current_time'] = str(current_time)
-                        data['away_images'] = away_img
-                        data['home_images'] = home_img    
+                        # data['away_images'] = away_img
+                        # data['home_images'] = home_img    
                         serializer = EventsSerializer(data=data)
                         if serializer.is_valid():
                             event_objects = Events.objects.filter(
                                 event_id=event['EVENT_ID'])
                             if event_objects.exists():
                                 event_object = event_objects.first()
+                                event_object.updated_at = timezone.now()
                                 result.append(serializer.data)
                                 serializer.update(
                                     event_object, serializer.validated_data)
                             else:
                                 event_object = Events.objects.create(
-                                    **serializer.validated_data)
+                                    **serializer.validated_data,
+                                    updated_at=timezone.now())
                             tournament.events.add(event_object)
                         else:
                             print(serializer.errors)
@@ -151,6 +150,7 @@ def send_request():
         logger.error("Произошла ошибка при получении матчей: %s", e)
     serialized_tournaments = serialize('json', Tournament.objects.all())
     send_to_channel_layer("tournament_updates", serialized_tournaments)
+    # print(Tournament.objects.all())
     return Tournament.objects.all()
 
 # @shared_task
@@ -180,18 +180,18 @@ def send_request_hockey(bind=True, autoretry_for=(RequestException,), retry_back
     TournamentHockey.objects.all().select_for_update().delete()
     HockeyLiveEvents.objects.all().select_for_update().delete()
 
-    url = "https://fs.nimbase.cc/v1/events/live-list"
+    url = "https://flashlive-sports-api.hgapi.top/v1/events/live-list?locale=en_INT&sport_id=4&timezone=-4"
     headers = {
-        'api-key-bravo': 'Nc4znHJeSs06G99YMVVBovHF',
-        'x-mashape-user': 'baggio093',
-        'x-mashape-subscription': 'baggio093-Mega'
-    }
-    params = {
-        'timezone': '-4',
-        'sport_id': '4',
-        'locale': 'ru_RU'
-    }
-    response = requests.get(url, headers=headers, params=params)
+            'accept': 'application/json' ,
+            'x-portal-apikey': 'CJZtUTmTlzmYL2LOAXfMEdwpTTyskrM5hQhT4lT1DJqUz'
+            }
+
+    # params = {
+    #     'timezone': '-4',
+    #     'sport_id': '4',
+    #     'locale': 'ru_RU'
+    # }
+    response = requests.get(url, headers=headers)
     parsed_data = response.json()
     try:
         for item in parsed_data['DATA']:
