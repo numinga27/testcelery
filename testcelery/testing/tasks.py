@@ -65,12 +65,12 @@ def send_request():
 
             url = "https://flashlive-sports-api.hgapi.top/v1/events/live-list?locale=en_INT&sport_id=1&timezone=-4"
             headers = {
-            'accept': 'application/json' ,
-            'x-portal-apikey': 'CJZtUTmTlzmYL2LOAXfMEdwpTTyskrM5hQhT4lT1DJqUz'
+                'accept': 'application/json',
+                'x-portal-apikey': 'CJZtUTmTlzmYL2LOAXfMEdwpTTyskrM5hQhT4lT1DJqUz'
             }
 
             response = requests.get(url, headers=headers)
-            parsed_data = response.json() 
+            parsed_data = response.json()
             # print(parsed_data)
             try:
                 for item in parsed_data['DATA']:
@@ -82,14 +82,15 @@ def send_request():
                         tournament = Tournament.objects.create(
                             name=item['NAME'],
                             tournament_stage_type=item['TOURNAMENT_STAGE_TYPE'],
-                             tournament_imng =  item['TOURNAMENT_IMAGE'],
+                            tournament_imng=upload_image(
+                                item['TOURNAMENT_IMAGE']),
                             TOURNAMENT_TEMPLATE_ID=item['TOURNAMENT_TEMPLATE_ID'],
                             updated_at=timezone.now()
                         )
                     for event in item['EVENTS']:
-                        # home_img = [upload_image(
-                        # event.get('HOME_IMAGES'))]
-                        # away_img = [upload_image(event.get('AWAY_IMAGES'))]
+                        home_img = [upload_image(
+                        event.get('HOME_IMAGES'))]
+                        away_img = [upload_image(event.get('AWAY_IMAGES'))]
                         stage_start_time = datetime.datetime.fromtimestamp(
                             event['STAGE_START_TIME'])
                         current_time = datetime.datetime.now() - stage_start_time
@@ -123,8 +124,8 @@ def send_request():
                         if event['STAGE'] == "SECOND_HALF":
                             current_time += timedelta(minutes=45)
                             data['current_time'] = str(current_time)
-                        # data['away_images'] = away_img
-                        # data['home_images'] = home_img    
+                        data['away_images'] = away_img
+                        data['home_images'] = home_img
                         serializer = EventsSerializer(data=data)
                         if serializer.is_valid():
                             event_objects = Events.objects.filter(
@@ -182,9 +183,9 @@ def send_request_hockey(bind=True, autoretry_for=(RequestException,), retry_back
 
     url = "https://flashlive-sports-api.hgapi.top/v1/events/live-list?locale=en_INT&sport_id=4&timezone=-4"
     headers = {
-            'accept': 'application/json' ,
-            'x-portal-apikey': 'CJZtUTmTlzmYL2LOAXfMEdwpTTyskrM5hQhT4lT1DJqUz'
-            }
+        'accept': 'application/json',
+        'x-portal-apikey': 'CJZtUTmTlzmYL2LOAXfMEdwpTTyskrM5hQhT4lT1DJqUz'
+    }
 
     # params = {
     #     'timezone': '-4',
