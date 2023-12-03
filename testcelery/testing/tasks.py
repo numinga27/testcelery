@@ -149,8 +149,8 @@ def send_request():
     except Exception as e:
         # Если возникла ошибка, записываем ее в лог
         logger.error("Произошла ошибка при получении матчей: %s", e)
-    serialized_tournaments = serialize('json', Tournament.objects.all())
-    send_to_channel_layer("tournament_updates", serialized_tournaments)
+    # serialized_tournaments = serialize('json', Tournament.objects.all())
+    # send_to_channel_layer("tournament_updates", serialized_tournaments)
     # print(Tournament.objects.all())
     return Tournament.objects.all()
 
