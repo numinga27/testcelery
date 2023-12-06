@@ -176,22 +176,6 @@ class HockeyView(viewsets.ModelViewSet):
     queryset = TournamentHockey.objects.all()
     serializer_class = TournamentHockeySerializer
 
-    # def start_scheduling(self):
-    #     # Запускаем функцию send_request каждые 5 секунд
-    #     schedule.every(5).seconds.do(send_request_hockey)
-    #     while True:
-    #         schedule.run_pending()
-    #         time.sleep(1)
-
-    # def list(self, request):
-    #     # Запускаем поток для выполнения start_scheduling
-    #     thread = threading.Thread(target=self.start_scheduling)
-    #     thread.start()
-    #     tournaments_hockey = TournamentHockey.objects.all()
-    #     serializer = self.serializer_class(tournaments_hockey, many=True)
-    #     # event_viewset = EventIdViewSet()
-    #     # event_viewset.list_ev(request)
-    #     return Response(serializer.data)
     def list(self, request):
         task = send_request_hockey()  # Add parentheses to call the function
         serializer = self.serializer_class(task, many=True)
