@@ -161,7 +161,7 @@ class TournamentViewSet(viewsets.ModelViewSet):
 
     def list(self, request):
         send_request()
-        recent_time = timezone.now() - timedelta(minutes=70)
+        recent_time = timezone.now() - timedelta(minutes=150)
         queryset = Tournament.objects.filter(updated_at__gte=recent_time)
 
         serializer = self.serializer_class(queryset, many=True)
@@ -173,7 +173,7 @@ class TournamentViewSet(viewsets.ModelViewSet):
 
 class HockeyView(viewsets.ModelViewSet):
     '''Основной вью для хоккея'''
-    queryset = TournamentHockey.objects.filter(events__stge_type='LIVE')
+    queryset = TournamentHockey.objects.all()
     serializer_class = TournamentHockeySerializer
 
     # def start_scheduling(self):
