@@ -6,7 +6,6 @@ class Tournament(models.Model):
     tournament_imng = models.TextField(null=True)
     TOURNAMENT_TEMPLATE_ID = models.TextField(null=True)
     TOURNAMENT_IMAGE = models.URLField(null=True)
-    updated_at = models.DateTimeField(auto_now=True, null=True) 
 
 
 class Events(models.Model):
@@ -39,7 +38,6 @@ class Events(models.Model):
     red_cards_away = models.TextField(null=True)
     yellow_cards_home = models.TextField(null=True)
     yellow_cards_away = models.TextField(null=True)
-    updated_at = models.DateTimeField(auto_now=True, null=True) 
 
 
 class EventId(models.Model):

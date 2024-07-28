@@ -11,42 +11,9 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
-import logging
-import os
-
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-# LOG_DIR = os.path.join(BASE_DIR, 'logs')
-# # Создаем директорию, если она не существует
-# if not os.path.exists(LOG_DIR):
-#     os.makedirs(LOG_DIR)
-
-# # Настройки логирования
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'formatters': {  # Форматирование сообщений
-#         'verbose': {
-#             'format': '{levelname} {asctime} {module} {message}',
-#             'style': '{',
-#         },
-#     },
-#     'handlers': {  # Обработчики
-#         'file': {
-#             'class': 'logging.FileHandler',
-#             'filename': os.path.join(LOG_DIR, 'celer.log'),  # Путь к файлу логов Celery
-#             'formatter': 'verbose',
-#         },
-#     },
-#     'loggers': {
-#         'celery': {  # Настройки логгера для Celery
-#             'handlers': ['file'],
-#             'level': 'INFO',
-#             'propagate': False,
-#         },
-#     },
-# }
 
 
 # Quick-start development settings - unsuitable for production
@@ -60,7 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -71,8 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'testing',
-    'celery',
-    'channels',
+    'celery'
 ]
 
 MIDDLEWARE = [
@@ -83,7 +49,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'channels.middleware.ChannelsMiddleware',
 ]
 
 ROOT_URLCONF = 'testcelery.urls'
@@ -105,16 +70,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'testcelery.wsgi.application'
-ASGI_APPLICATION = "testcelery.routing.application"
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [('127.0.0.1', 6379)],
-        },
-    },
-}
+
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
@@ -183,12 +140,11 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Europe/Moscow'
 CELERY_BEAT_SCHEDULE = {
     'parse-every-30-seconds': {
-        'task': 'testing.tasks.send_request_hockey',
-        'schedule': 10.0,
-    },
-     'parseseconds': {
         'task': 'testing.tasks.send_request',
-        'schedule': 10.0,
+        'schedule': 30.0,
+    },
+    'pare-hockey': {
+        'task': 'testing.tasks.send_request',
+        'schedule': 30.0,
     },
 }
-CACHE_MIDDLEWARE_SECONDS = 0
